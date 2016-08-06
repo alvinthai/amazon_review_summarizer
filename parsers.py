@@ -112,8 +112,8 @@ class Unigramer(object):
                 wordset.add(token.lemma_)
                 self.rev_dict[token.lemma_].add(sent.review_idx)
 
-            if token.head.dep_ == 'amod':
-                pol = TextBlob(token.head.string).sentiment.polarity
+            if token.dep_ == 'amod':
+                pol = abs(TextBlob(token.string).sentiment.polarity)
                 self.pol_dict[token.head.lemma_].append(pol)
 
         return " ".join(wordset)
