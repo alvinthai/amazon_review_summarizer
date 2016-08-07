@@ -88,8 +88,11 @@ class Unigramer(object):
     def __init__(self):
         self.dep_dict = defaultdict(list)
         self.cnt_dict = defaultdict(int)
+        # self.pol_dict = defaultdict(list)
         self.rev_dict = defaultdict(set)
-        self.pol_dict = defaultdict(list)
+        self.sent_dict = defaultdict(set)
+        self.unigrams = None
+        self.word_pos_dict = defaultdict(list)
 
     def _iter_nouns(self, sent):
         '''
@@ -112,16 +115,20 @@ class Unigramer(object):
                 wordset.add(token.lemma_)
                 self.rev_dict[token.lemma_].add(sent.review_idx)
 
-            if token.dep_ == 'amod':
-                pol = abs(TextBlob(token.string).sentiment.polarity)
-                self.pol_dict[token.head.lemma_].append(pol)
+                if sent.sent_idx not in self.sent_dict[token.lemma_]:
+                    self.word_pos_dict[token.lemma_].append(token.i)
+                    self.sent_dict[token.lemma_].add(sent.sent_idx)
+
+            # if token.dep_ == 'amod':
+            #     pol = abs(TextBlob(token.string).sentiment.polarity) > 0
+            #     self.pol_dict[token.head.lemma_].append(pol)
 
         return " ".join(wordset)
 
     def candidate_unigrams(self, corpus, min_pct=0.01, amod_pct=0.075):
         '''
         INPUT: ReviewSents, float, float
-        OUTPUT: set, dict
+        OUTPUT: set
 
         obtains a set of candidate unigrams
 
@@ -151,7 +158,34 @@ class Unigramer(object):
             if np.mean(arr) < amod_pct:
                 unigrams.remove(word)
 
-        return unigrams, self.cnt_dict
+        self.unigrams = unigrams
+
+        return unigrams
+
+    def get_unigram_count(self):
+        '''
+        INPUT: None
+        OUTPUT: dict
+
+        Returns the cnt_dict object. Required as input for candidate_bigrams
+            function of Bigramer class.
+        '''
+        return self.cnt_dict
+
+    def update_review_count(self, bigramer):
+        '''
+        IMPUT: set, Bigramer
+        OUTPUT: none
+
+        Updates Unigramer rev_dict so that reviews aren't double counted for
+            unigram words appearing in bigrams.
+        '''
+        update_queue = self.unigrams & bigramer.bigram_words
+
+        for unigram in update_queue:
+            for bigram in bigramer.bigrams:
+                if unigram in bigram:
+                    self.rev_dict[unigram] -= bigramer.rev_dict[bigram]
 
 
 class Bigramer(object):
@@ -160,9 +194,29 @@ class Bigramer(object):
     '''
     def __init__(self):
         self.avg_dist = defaultdict(float)
+        self.bigrams = None
+        self.bigram_words = None
         self.distances = defaultdict(list)
+        self.ordering = defaultdict(lambda: [0, 0])
         self.pmi = defaultdict(float)
         self.rev_dict = defaultdict(set)
+        self.sent_dict = defaultdict(set)
+        self.word_pos_dict = defaultdict(list)
+
+    def _reverse_key(self, key, new_key):
+        '''
+        INPUT: string(two words seperated by space)
+        OUTPUT: None
+
+        Reverses the word order for the key in the class dictionaries
+        '''
+        self.avg_dist[new_key] = self.avg_dist.pop(key)
+        self.distances[new_key] = self.distances.pop(key)
+        self.ordering[new_key] = self.ordering.pop(key)
+        self.pmi[new_key] = self.pmi.pop(key)
+        self.rev_dict[new_key] = self.rev_dict.pop(key)
+        self.sent_dict[new_key] = self.sent_dict.pop(key)
+        self.word_pos_dict[new_key] = self.word_pos_dict.pop(key)
 
     def _get_compactness_feat(self, corpus):
         '''
@@ -191,18 +245,27 @@ class Bigramer(object):
                         if root < -7.5 and (item.dep_ not in com_dep and
                                             item.tag_ not in com_tag and
                                             item.lemma_ not in nonaspects):
-                            tup = tuple(sorted([item.lemma_, token.lemma_]))
-                            dist = abs(item.i - token.i)
-                            self.distances[tup].append(dist)
-                            self.rev_dict[tup].add(sent.review_idx)
-                            output.add(tup)
+                            bigrm = " ".join(sorted([item.lemma_,
+                                                     token.lemma_]))
+                            dist = item.i - token.i
+                            word_sort = item.lemma_ < token.lemma_
+
+                            self.distances[bigrm].append(abs(dist))
+                            self.rev_dict[bigrm].add(sent.review_idx)
+                            self.ordering[bigrm][word_sort == (dist > 0)] += 1
+
+                            if sent.sent_idx not in self.sent_dict[bigrm]:
+                                self.word_pos_dict[bigrm].append(token.i)
+                                self.sent_dict[bigrm].add(sent.sent_idx)
+
+                            output.add(bigrm)
 
             if output:
                 for element in output:
                     yield element
 
     def candidate_bigrams(self, corpus, cnt_dict, min_pct=0.005,
-                          pmi_pct=0.000):
+                          pmi_pct=1/2500, max_avg_dist=2):
         '''
         INPUT: ReviewSents, cnt_dict, float
         OUTPUT: set(tuples), set(str)
@@ -211,7 +274,7 @@ class Bigramer(object):
             _get_compactness_feat function appearing at least
             min_cnt times
 
-        cnt_dict output from candidate_unigrams is the input for the second
+        cnt_dict from Unigramer class is the input for the second
             argument of this function
         '''
         bigrams = set()
@@ -220,14 +283,26 @@ class Bigramer(object):
         feats = Counter(self._get_compactness_feat(corpus))
 
         for (key, val) in feats.iteritems():
-            pmi = round(val / (cnt_dict[key[0]] * cnt_dict[key[1]]), 4)
+            order = sorted(key.split(" "),
+                           reverse=self.ordering[key][1] >
+                           self.ordering[key][0])
+            new_key = " ".join(order)
 
-            if val >= max(2, min_pct * corpus.n_sent) and pmi >= pmi_pct:
-                avg_dist = round(np.mean(self.distances[key]), 2)
+            pmi = round(val / (cnt_dict[order[0]] * cnt_dict[order[1]]), 4)
+            avg_dist = round(np.mean(self.distances[key]), 2)
+
+            if pmi >= pmi_pct and (avg_dist < max_avg_dist and
+                                   val >= max(2, min_pct * corpus.n_sent)):
                 self.avg_dist[key] = avg_dist
                 self.pmi[key] = pmi
 
-                bigrams.add(key)
-                bigram_words.update(set(key))
+                bigrams.add(new_key)
+                bigram_words.update(set(order))
 
-        return bigrams, bigram_words
+                if key != new_key:
+                    self._reverse_key(key, new_key)
+
+        self.bigrams = bigrams
+        self.bigram_words = bigram_words
+
+        return bigrams
