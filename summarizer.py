@@ -82,7 +82,7 @@ def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
                 len(polarizer2.aspect_pol_list[aspect]['mixed']))
         n = max(len(polarizer1.aspect_pol_list[aspect]['neg']),
                 len(polarizer2.aspect_pol_list[aspect]['neg']))
-        split = int(line_len / 2)
+        split = int((line_len - 1) / 2)
 
         str1 = polarizer1.print_polarity(aspect, max_txt_len=split,
                                          lines_pos=p, lines_mixed=m,
