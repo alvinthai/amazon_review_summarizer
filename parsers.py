@@ -88,6 +88,7 @@ class Unigramer(object):
     def __init__(self):
         self.dep_dict = defaultdict(list)
         self.cnt_dict = defaultdict(int)
+        self.n_reviews = None
         # self.pol_dict = defaultdict(list)
         self.rev_dict = defaultdict(set)
         self.sent_dict = defaultdict(list)
@@ -138,6 +139,7 @@ class Unigramer(object):
             being modified by an amod dependency at least amod_pct of the time
         '''
         count_X = []
+        self.n_reviews = corpus.n_reviews
 
         for sent in corpus.sentences:
             count_X.append(self._iter_nouns(sent))

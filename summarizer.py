@@ -3,7 +3,7 @@ from pprint import pprint
 import pandas as pd
 
 
-def get_top_aspects(corpus, unigramer, bigramer, n=10, printing=True):
+def get_top_aspects(unigramer, bigramer, n=10, printing=True):
     '''
     INPUT: ReviewSents, Unigramer, Bigramer, int, bool
     OUTPUT: list(tuple)
@@ -29,10 +29,10 @@ def get_top_aspects(corpus, unigramer, bigramer, n=10, printing=True):
     return top_aspects
 
 
-def common_features(aspects1, aspects2, corpus1, corpus2, min_pct=0.03,
+def common_features(aspects1, aspects2, unigramer1, unigramer2, min_pct=0.03,
                     n=10, printing=True):
     '''
-    INPUT: list(tuples), list(tuples), ReviewSents, ReviewSents, float,
+    INPUT: list(tuples), list(tuples), Unigramer, Unigramer, float,
            int, bool
     OUTPUT: np.array([aspect, freq1, freq2]), list
 
@@ -48,8 +48,8 @@ def common_features(aspects1, aspects2, corpus1, corpus2, min_pct=0.03,
                             pd.DataFrame(aspects2, columns=['aspect', 'freq']),
                             on='aspect', suffixes=('1', '2'))
 
-    comm_aspects['pct1'] = comm_aspects['freq1'] / corpus1.n_reviews
-    comm_aspects['pct2'] = comm_aspects['freq2'] / corpus2.n_reviews
+    comm_aspects['pct1'] = comm_aspects['freq1'] / unigramer1.n_reviews
+    comm_aspects['pct2'] = comm_aspects['freq2'] / unigramer2.n_reviews
 
     comm_aspects = comm_aspects[(comm_aspects['pct1'] >= min_pct) &
                                 (comm_aspects['pct2'] >= min_pct)]
