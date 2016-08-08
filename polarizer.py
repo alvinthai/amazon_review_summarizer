@@ -42,7 +42,6 @@ class Polarizer(object):
             word_pos_idx = self.bigramer.word_pos_dict[aspect]
 
         review_dict = defaultdict(lambda: {'first_aspect_idx': None,
-                                           'first_sent_idx': None,
                                            'rating': None,
                                            'sentences': ""})
 
@@ -65,7 +64,6 @@ class Polarizer(object):
                 if not review_dict[review]['first_aspect_idx']:
                     i = len(corpus.sentences[s].sent[0:w].string)
                     review_dict[review]['first_aspect_idx'] = i
-                    review_dict[review]['first_sent_idx'] = s
 
         self.aspect_dict[aspect] = review_dict
 
@@ -99,7 +97,6 @@ class Polarizer(object):
         aspect_idx = self.aspect_dict[aspect][review]['first_aspect_idx']
         rating = self.aspect_dict[aspect][review]['rating']
         review_txt = self.aspect_dict[aspect][review]['sentences']
-        sent_idx = self.aspect_dict[aspect][review]['first_sent_idx']
 
         pol_blob = round(TextBlob(review_txt).sentiment.polarity, 3)
 
@@ -127,7 +124,7 @@ class Polarizer(object):
         else:
             result = 'mixed'
 
-        output = (review_txt, aspect_idx, sent_idx, rating, pol_blob)
+        output = (review_txt, aspect_idx, rating, pol_blob)
 
         self.aspect_dict[aspect][review]['pol_val'] = pol_blob
         self.aspect_pol_list[aspect][result].append(output)
@@ -142,7 +139,7 @@ class Polarizer(object):
         dic = self.aspect_pol_list[aspect]
 
         for category in dic:
-            dic[category] = sorted(dic[category], key=lambda x: x[4],
+            dic[category] = sorted(dic[category], key=lambda x: x[3],
                                    reverse=category != 'neg')
 
     def _get_pol_class_pct(self, aspect):
@@ -165,41 +162,43 @@ class Polarizer(object):
 
         self.aspect_pct[aspect] = [pos, mixed, neg]
 
-    def print_polarity(self, corpus, aspect):
+    def print_polarity(self, aspect, max_txt_len=80, lines_pos=0,
+                       lines_mixed=0, lines_neg=0, printing=True):
         '''
-        INPUT: ReviewSents, str
-        OUTPUT: None
+        INPUT: ReviewSents, str, int, int, int, bool
+        OUTPUT: str if printing=False
 
         Prints out the polarity and full text sentences for reviews containing
         aspect
         '''
-        labels = {'pos': 'Positive Sentiment',
-                  'mixed': 'Mixed Sentiment',
-                  'neg': 'Negative Sentiment'}
+        dic = self.aspect_pol_list[aspect]
+        categories = [('pos', 'Positive Sentiment', lines_pos),
+                      ('mixed', 'Mixed Sentiment', lines_mixed),
+                      ('neg', 'Negative Sentiment', lines_neg)]
 
-        print '-' * 40
-        print aspect
-        print '-' * 40, '\n'
+        big_str = ""
+
+        big_str += ('-' * 40).ljust(max_txt_len) + '\n'
+        big_str += aspect.ljust(max_txt_len) + '\n'
+        big_str += ('-' * 40).ljust(max_txt_len) + '\n\n'
 
         good, mixed, bad = self.aspect_pct[aspect]
 
-        print 'average rating:', np.mean(self.ratings[aspect])
-        print 'positive:', good, '%'
-        print 'mixed:', mixed, '%'
-        print 'negative:', bad, '%', '\n'
+        big_str += 'average rating: {}'.format(np.mean(self.ratings[aspect])) \
+                   .ljust(max_txt_len) + '\n'
+        big_str += 'positive: {} %'.format(good).ljust(max_txt_len) + '\n'
+        big_str += 'mixed: {} %'.format(mixed).ljust(max_txt_len) + '\n'
+        big_str += 'negative: {} %'.format(bad).ljust(max_txt_len) + '\n\n'
 
-        dic = self.aspect_pol_list[aspect]
-        categories = ['pos', 'mixed', 'neg']
+        for category, label, total_lines in categories:
+            big_str += label.ljust(max_txt_len) + '\n'
+            big_str += ('-' * 28).ljust(max_txt_len) + '\n'
 
-        for category in categories:
-            print labels[category]
-            print '-' * 28
-
-            for txt, asp_idx, _, _, _ in dic[category]:
+            for txt, asp_idx, _, _ in dic[category]:
                 reach = 10
                 frag = txt
 
-                while len(frag) > 80:
+                while len(frag) > max_txt_len:
                     chars = txt.split(" ")
 
                     lst = map(len, chars)
@@ -214,9 +213,16 @@ class Polarizer(object):
                     reach -= 1
 
                 if frag:
-                    print frag
+                    big_str += frag.ljust(max_txt_len) + '\n'
+                    if total_lines:
+                        total_lines -= 1
 
-            print
+            big_str += '\n' * (total_lines + 1)
+
+        if printing:
+            print big_str
+        else:
+            return big_str
 
     def polarize_aspects(self, corpus, aspect_list):
         '''

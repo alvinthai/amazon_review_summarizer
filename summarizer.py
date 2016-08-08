@@ -64,3 +64,40 @@ def common_features(aspects1, aspects2, corpus1, corpus2, min_pct=0.03,
         pprint(output[0:n])
 
     return output[:, 0:3], output[:, 0].tolist()
+
+
+def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
+    '''
+    INPUT: list(str), Polarizer, Polarizer
+    OUTPUT: None
+
+    Prints out a side-by-side comparison of all common aspects for two products
+    '''
+    big_str = ''
+
+    for aspect in aspect_list:
+        p = max(len(polarizer1.aspect_pol_list[aspect]['pos']),
+                len(polarizer2.aspect_pol_list[aspect]['pos']))
+        m = max(len(polarizer1.aspect_pol_list[aspect]['mixed']),
+                len(polarizer2.aspect_pol_list[aspect]['mixed']))
+        n = max(len(polarizer1.aspect_pol_list[aspect]['neg']),
+                len(polarizer2.aspect_pol_list[aspect]['neg']))
+        split = int(line_len / 2)
+
+        str1 = polarizer1.print_polarity(aspect, max_txt_len=split,
+                                         lines_pos=p, lines_mixed=m,
+                                         lines_neg=n, printing=False)
+        str2 = polarizer2.print_polarity(aspect, max_txt_len=split,
+                                         lines_pos=p, lines_mixed=m,
+                                         lines_neg=n, printing=False)
+
+        str1 = str1.split('\n')
+        str2 = str2.split('\n')
+
+        comb_str = zip(str1, str2)
+        comb_str = map(' '.join, comb_str)
+        comb_str = '\n'.join(comb_str)
+
+        big_str += comb_str + '\n'
+
+    print big_str
