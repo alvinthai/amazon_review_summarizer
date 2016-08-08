@@ -12,19 +12,21 @@ parser = English()
 
 class SentCustomProperties(object):
     '''
-    adds properties to spacy sentence that tracks:
-        index of review where sentence originated
-        customer review rating
-        spacy Span object
-        index of sentence within review corpus
-        index of first token in sentence within review
-        num of words in sentences
+    Adds properties to spacy sentences
     '''
 
     def __init__(self, review_idx, rating, sent_idx, sent):
         '''
-        INPUT: int, int, spacy sentence (spacy.tokens.span.Span)
+        INPUT: int, int, int, spacy sentence (spacy.tokens.span.Span)
         OUTPUT: None
+
+        Attribures:
+            review_idx (int): index of review where sentence originated
+            review_rate (int): customer review rating
+            sent (spacy.tokens.span.Span): spacy Span object
+            sent_idx (int): index of sentence within review corpus
+            start_idx (int): index of first token in sentence within review
+            words (int): num of words in sentences
         '''
         self.review_idx = review_idx
         self.review_rate = rating
@@ -44,7 +46,16 @@ class ReviewSents(object):
         '''
         INPUT: Loader
         OUTPUT: None
+
+        Attribures:
+            n_reviews (int): total number of reviews for product
+            n_sent (int): total number of sentences in all reviews for product
+            name (str): name of product
+            ratings (list): list of customer review ratings for product
+            reviews (list): list of customer review text for product
+            sentences (list): list of SentCustomProperties objects
         '''
+        self.name = product.name
         self.ratings = product.ratings
         self.reviews = product.reviews
         self.n_reviews, self.n_sent, self.sentences = self._parse_sentences()
@@ -86,8 +97,27 @@ class Unigramer(object):
     '''
 
     def __init__(self):
-        self.dep_dict = defaultdict(list)
+        '''
+        Attribures:
+            cnt_dict (dict):      dictionary with word as key and count of how
+                                  frequently such word appears in all review
+                                  for products as value
+            dep_dict (dict):      dictionary with word as key and list of every
+                                  dependency type that corresponding with the
+                                  word element as value
+            n_reviews (int):      total number of reviews for product
+            rev_dict (dict):      dictionary with word as key and set of review
+                                  indexes containg word as value
+            sent_dict (dict):     dictionary with word as key and list of
+                                  sentence indexes containg word as value
+            unigrams (set):       set of unigrams obtained with
+                                  candidate_unigrams function
+            word_pos_dict (dict): dictionary with word as key and list of
+                                  token index of word within spacy sentence as
+                                  value
+        '''
         self.cnt_dict = defaultdict(int)
+        self.dep_dict = defaultdict(list)
         self.n_reviews = None
         # self.pol_dict = defaultdict(list)
         self.rev_dict = defaultdict(set)
@@ -98,10 +128,10 @@ class Unigramer(object):
     def _iter_nouns(self, sent):
         '''
         INPUT: SentCustomProperties
-        OUTPUT: set
+        OUTPUT: str
 
         Iterates through each token of spacy sentence and collects
-            lemmas of all nouns into a set.
+        lemmas of all nouns into a set.
         '''
         wordset = set()
 
@@ -132,11 +162,13 @@ class Unigramer(object):
         INPUT: ReviewSents, float, float
         OUTPUT: set
 
-        obtains a set of candidate unigrams
+        Args:
+            min_pct: percentage of sentences unigram must appear in
+            amod_pct: minimum percentage where word element has a corresponding
+                      'amod' dependency
 
-        each candidate unigram must be a noun and must appear in at least
-            a percentage of the sentences specified by min_pct with the unigram
-            being modified by an amod dependency at least amod_pct of the time
+        Obtains a set of candidate unigrams
+        Each candidate unigram must be a noun
         '''
         count_X = []
         self.n_reviews = corpus.n_reviews
@@ -167,11 +199,11 @@ class Unigramer(object):
 
     def update_review_count(self, bigramer):
         '''
-        IMPUT: set, Bigramer
+        IMPUT: Bigramer
         OUTPUT: none
 
         Updates Unigramer rev_dict so that reviews aren't double counted for
-            unigram words appearing in bigrams.
+        unigram words appearing in bigrams.
         '''
         update_queue = self.unigrams & bigramer.bigram_words
 
@@ -186,6 +218,31 @@ class Bigramer(object):
     Class of functions for extracting Bigrams
     '''
     def __init__(self):
+        '''
+        Attribures:
+            avg_dist (dict):      dictionary with word as key and count of how
+                                  frequently such word appears in all review
+                                  for products as value
+            bigrams (set):        set of bigrams obtained with
+                                  candidate_bigrams function
+            bigram_words (set):   set of words used in bigrams
+            distances (dict):     dictionary with bigram as key and list of
+                                  absolute word spacing difference betweeen
+                                  words of bigram as values
+            ordering (dict):      dictionary with bigram as key and list of
+                                  which word in bigram appears first in
+                                  sentence as value
+            pmi (dict):           dictionary with bigram as key and float
+                                  describing Pointwise Mutual Information
+                                  between words in bigram as value
+            rev_dict (dict):      dictionary with word as key and set of review
+                                  indexes containg word as value
+            sent_dict (dict):     dictionary with word as key and list of
+                                  sentence indexes containg word as value
+            word_pos_dict (dict): dictionary with word as key and list of
+                                  token index of word within spacy sentence as
+                                  value
+        '''
         self.avg_dist = defaultdict(float)
         self.bigrams = None
         self.bigram_words = None
@@ -198,8 +255,12 @@ class Bigramer(object):
 
     def _reverse_key(self, key, new_key):
         '''
-        INPUT: string(two words seperated by space)
+        INPUT: str, str
         OUTPUT: None
+
+        Args:
+            key: bigram with words seperated by space
+            new_key: bigram with words reversed and seperated by space
 
         Reverses the word order for the key in the class dictionaries
         '''
@@ -216,10 +277,10 @@ class Bigramer(object):
         INPUT: ReviewSents
         OUTPUT: generator(tuples(unicode))
 
-        outputs generator of tuples (in alphabetical order) consisting of:
+        Outputs generator of tuples (in alphabetical order) consisting of:
             at least one noun
             a second word within +/- 3 words of noun
-        excludes dependencies and tags not likely to be a feature word
+        Excludes dependencies and tags not likely to be a feature word
         '''
 
         for sent in corpus.sentences:
@@ -264,12 +325,16 @@ class Bigramer(object):
     def candidate_bigrams(self, corpus, unigramer, min_pct=0.005,
                           pmi_pct=1/2500, max_avg_dist=2):
         '''
-        INPUT: ReviewSents, Unigramer, float
-        OUTPUT: set(tuples), set(str)
+        INPUT: ReviewSents, Unigramer, float, float, float
+        OUTPUT: set(str)
 
-        outputs set of tuples and set of words within tuples from
-            _get_compactness_feat function appearing at least
-            min_cnt times
+        Args:
+            min_pct: percentage of sentences bigram must appear in
+            pmi_pct: minimum PMI value for bigram to be considered valid
+            max_avg_dist: maximum average word spacing distance for bigram to
+                          be considered valud
+
+        Outputs set of bigram strings with words in bigram seperated by space
         '''
         bigrams = set()
         bigram_words = set()

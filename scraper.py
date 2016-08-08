@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import os
 import re
+import requests
 
 
 def get_id(url):
@@ -8,7 +9,10 @@ def get_id(url):
     INPUT: str
     OUTPUT: str
 
-    gets asin identifer for amazon product from a url
+    Args:
+        url: an Amazon url string
+
+    Gets asin identifer for amazon product from a url
     '''
 
     # url format: https://www.amazon.com/.../.../id/...
@@ -27,8 +31,11 @@ def extract(asin):
     INPUT: str
     OUTPUT: list(int), list(str)
 
-    extracts the star rating and review text from directory of
-    amazon html files
+    Args:
+        asin: an Amazon asin str identifier (output from get_id function)
+
+    Extracts the star rating and review text from directory of amazon html
+    files
     '''
     ratings = []
     reviews = []
@@ -37,38 +44,51 @@ def extract(asin):
     pages = [file_ for file_ in os.listdir(path) if file_[-5:] == '.html']
 
     for page in pages:
-        html = open(path + page, 'r')
-        soup = BeautifulSoup(html, 'html.parser')
-        tags = soup.findAll("div", {"class": "a-section review"})
+        with open(path + page, 'r') as f:
+            soup = BeautifulSoup(f, 'html.parser')
+            tags = soup.findAll("div", {"class": "a-section review"})
 
-        if not tags:
-            print '{} is an invalid page format for scraping'.format(page)
-            continue
+            if not tags:
+                print '{} is an invalid page format for scraping'.format(page)
+                continue
 
-        for tag in tags:
-            rating = int(tag.find('i').text[0])
-            review = tag.findAll("span",
-                                 {"class": "a-size-base review-text"})[0].text
-            ratings.append(rating)
-            reviews.append(review)
+            for tag in tags:
+                rating = int(tag.find('i').text[0])
+                review = tag.findAll("span", {"class": "a-size-base " +
+                                              "review-text"})[0].text
+                ratings.append(rating)
+                reviews.append(review)
 
     return ratings, reviews
 
 
 class Loader(object):
     '''
-    class for scraping a review site on Amazon
+    Class for scraping a review site on Amazon
     '''
     def __init__(self, name=None):
-        self.name = name
-
-    def scrape(self, n_reviews=100, delete=False):
         '''
-        INPUT: int
+        INPUT: str
         OUTPUT: None
 
-        scrapes n most helpful amazon reviews and extracts reviews
-        if already scraped, extracts reviews
+        Attributes:
+            name (str): custom name for Amazon product
+            asin (str): asin identifier for Amazon product
+        '''
+        self.name = name
+        self.asin = None
+
+    def scrape(self, n_reviews=300, delete=False):
+        '''
+        INPUT: int, bool
+        OUTPUT: None
+
+        Args:
+            n_reviews: number of reviews to scrape
+            delete: option to force delete folder containing cached reviews
+
+        Scrapes n most helpful amazon reviews and extracts reviews
+        If already scraped, extracts reviews
         '''
         url = raw_input('url of amazon product: ')
         asin = get_id(url)
@@ -108,3 +128,9 @@ class Loader(object):
 
             self.ratings = ratings
             self.reviews = reviews
+
+        if not self.name:
+            f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(asin)
+            with open(f, 'r') as html:
+                soup = BeautifulSoup(html, 'html.parser')
+                self.name = soup.select('.a-link-normal')[0].text

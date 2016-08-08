@@ -1,12 +1,15 @@
 from __future__ import division
-from pprint import pprint
 import pandas as pd
 
 
 def get_top_aspects(unigramer, bigramer, n=10, printing=True):
     '''
-    INPUT: ReviewSents, Unigramer, Bigramer, int, bool
+    INPUT: Unigramer, Bigramer, int, bool
     OUTPUT: list(tuple)
+
+    Args:
+        n: number of reviews to print
+        printing: option to print top n results
 
     Returns a list of the top appearing aspects across all reviews
     Prints out top n aspects
@@ -24,7 +27,7 @@ def get_top_aspects(unigramer, bigramer, n=10, printing=True):
                          key=lambda x: x[1], reverse=True)
 
     if printing:
-        pprint(top_aspects[0:n])
+        print top_aspects[0:n]
 
     return top_aspects
 
@@ -36,13 +39,16 @@ def common_features(aspects1, aspects2, unigramer1, unigramer2, min_pct=0.03,
            int, bool
     OUTPUT: np.array([aspect, freq1, freq2]), list
 
+    Args:
+        aspect1, aspect2: list output from get_top_aspects
+        min_pct: percentage of reviews aspect must appear in
+        n: number of reviews to print
+        printing: option to print top n results
+
     Outputs a list of the common aspects between two products.
 
-    List returned from sort_aspect_frequency is the input for the first and
-        second arguments of this function
-
     Results of output are sorted by f1 score like calculation using the
-        frequencies the aspect appears in product1 and product2.
+    frequencies the aspect appears in product1 and product2
     '''
     comm_aspects = pd.merge(pd.DataFrame(aspects1, columns=['aspect', 'freq']),
                             pd.DataFrame(aspects2, columns=['aspect', 'freq']),
@@ -61,15 +67,19 @@ def common_features(aspects1, aspects2, unigramer1, unigramer2, min_pct=0.03,
     output = comm_aspects.values[:, 0:3]
 
     if printing:
-        pprint(output[0:n])
+        print output[0:n]
 
     return output[:, 0:3], output[:, 0].tolist()
 
 
 def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
     '''
-    INPUT: list(str), Polarizer, Polarizer
+    INPUT: list(str), Polarizer, Polarizer, int
     OUTPUT: None
+
+    Args:
+        aspect_list: list of aspects to compare
+        line_len: line length to print out for side-by-side comparison
 
     Prints out a side-by-side comparison of all common aspects for two products
     '''
