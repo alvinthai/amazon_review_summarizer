@@ -19,6 +19,7 @@ from contextlib import closing
 from time import sleep
 import argparse
 import codecs
+import numpy as np
 import os
 import re
 import socket
@@ -39,14 +40,27 @@ def download_page(url, referer, maxretries, timeout, pause):
     htmlpage = None
     while tries < maxretries and htmlpage is None:
         try:
+            user_agent = ['Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36',
+              'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
+              'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
+              'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36',
+              'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.3319.102 Safari/537.36',
+              'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36',
+              'Mozilla/5.0 (Macintosh; PPC Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0',
+              'Mozilla/5.0 (Maemo; Linux armv7l; rv:10.0) Gecko/20100101 Firefox/10.0 Fennec/10.0',
+              'Mozilla/5.0 (Windows NT x.y; rv:10.0) Gecko/20100101 Firefox/10.0',
+              'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.517 Safari/537.36',
+              'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/4E423F',
+              'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36']
+
+            choice = np.random.choice(user_agent)
+            print choice
+
             code = 404
             req = request.Request(url)
             req.add_header('Referer', referer)
-            req.add_header('User-agent',
-                           'Mozilla/5.0 (X11; Linux i686) AppleWebKit/534.30'
-                           '(KHTML, like Gecko) Ubuntu/11.04'
-                           'Chromium/12.0.742.91 Chrome/12.0.742.91'
-                           'Safari/534.30')
+            req.add_header('User-agent', choice)
             with closing(request.urlopen(req, timeout=timeout)) as f:
                 code = f.getcode()
                 htmlpage = f.read()
@@ -105,8 +119,11 @@ def main():
     robotre = re.compile('images-amazon\.com/captcha/')
 
     for id_ in args.ids:
+
         if not os.path.exists(basepath + os.sep + id_):
             os.makedirs(basepath + os.sep + id_)
+
+        pause = args.pause + np.random.random()*4
 
         urlPart1 = "http://www.amazon." + args.domain + "/product-reviews/"
         urlPart2 = "/?ie=UTF8&showViewpoints=0&pageNumber="
@@ -127,7 +144,7 @@ def main():
             url = urlPart1 + str(id_) + urlPart2 + str(page) + urlPart3
             print(url)
             htmlpage, code = download_page(url, referer, args.maxretries,
-                                           args.timeout, args.pause)
+                                           args.timeout, pause)
 
             if htmlpage is None or code != 200:
                 if code == 503:
@@ -137,6 +154,7 @@ def main():
                           ') Retrying downloading the URL: ' +
                           url)
                 else:
+                    print user_ag
                     print('(' + str(code) + ') Done downloading the URL: ' +
                           url)
                     break
@@ -147,8 +165,8 @@ def main():
                 if robotre.search(htmlpage):
                     print('ROBOT! timeout=' + str(args.pause))
                     if args.captcha or page == 1:
-                        args.pause *= 2
-                        continue
+                        # break if robot detected
+                        return None
                     else:
                         args.pause += 2
                 for match in counterre.findall(htmlpage):
@@ -168,7 +186,6 @@ def main():
             if args.maxreviews > 0 and page * 10 >= args.maxreviews:
                 break
             page += 1
-
 
 if __name__ == '__main__':
     main()
