@@ -293,7 +293,7 @@ class Polarizer(object):
                     if total_lines:
                         total_lines -= 1
 
-            big_str += '\n' * (total_lines + 1)
+            big_str += (' ' * max_txt_len + '\n') * (total_lines + 1)
 
         if printing:
             print big_str
