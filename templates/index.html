@@ -71,9 +71,9 @@
             <div class="col-md-3">
                 <p class="lead">Top Matched Aspects</p>
                 <div class="list-group">
-                    <a href="#" class="list-group-item active">Category 1</a>
-                    <a href="#" class="list-group-item">Category 2</a>
-                    <a href="#" class="list-group-item">Category 3</a>
+                    <a id="cat1" href="#" class="list-group-item active" onclick="myFunction2('cat1')">Category 1</a>
+                    <a id="cat2" href="#" class="list-group-item" onclick="myFunction2('cat2')">Category 2</a>
+                    <a id="cat3" href="#" class="list-group-item" onclick="myFunction2('cat3')">Category 3</a>
                 </div>
             </div>
 
@@ -286,7 +286,14 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div id="menu1" class="tab-pane fade">
+                          <h3>Menu 1</h3>
+                          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                        </div>
+                        <div id="menu2" class="tab-pane fade">
+                          <h3>Menu 2</h3>
+                          <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+                        </div>
                     </div>
 
                 </div>
@@ -316,10 +323,10 @@
     <!-- /.container -->
 
     <!-- jQuery -->
-    <script src="js/jquery.js"></script>
+    <script src="../static/js/jquery.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="../static/js/bootstrap.min.js"></script>
 
     <script>
         function myFunction() {
@@ -327,6 +334,17 @@
                 document.getElementById("test_review_txt").innerHTML = a[1];
             } else {
                 document.getElementById("test_review_txt").innerHTML = a[0];
+            }
+        }
+    </script>
+
+    <script>
+        function myFunction2(cat) {
+            if (document.getElementById(cat).className == "list-group-item") {
+                document.getElementById("cat1").className = "list-group-item";
+                document.getElementById("cat2").className = "list-group-item";
+                document.getElementById("cat3").className = "list-group-item";
+                document.getElementById(cat).className = "list-group-item active";
             }
         }
     </script>
