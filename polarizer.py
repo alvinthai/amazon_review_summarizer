@@ -15,7 +15,7 @@ class Polarizer(object):
     def __init__(self, unigramer, bigramer):
         self.aspect_dict = dict()
         self.aspect_pct = dict()
-        self.aspect_pol_list = defaultdict(lambda: defaultdict(list))
+        self.aspect_pol_list = defaultdict(dict)
         self.bigramer = bigramer
         self.ratings = defaultdict(list)
         self.unigramer = unigramer
@@ -41,15 +41,17 @@ class Polarizer(object):
             sent_idx = self.bigramer.sent_dict[aspect]
             word_pos_idx = self.bigramer.word_pos_dict[aspect]
 
-        review_dict = defaultdict(lambda: {'first_aspect_idx': None,
-                                           'rating': None,
-                                           'sentences': ""})
+        review_dict = defaultdict(dict)
 
         for s, w in zip(sent_idx, word_pos_idx):
             review = corpus.sentences[s].review_idx
 
             if review not in rev_idx:
                 continue
+
+            if review not in review_dict:
+                review_dict[review]['sentences'] = ''
+                review_dict[review]['first_aspect_idx'] = None
 
             if s == prev_sent:
                 continue
@@ -186,9 +188,9 @@ class Polarizer(object):
 
         big_str += 'average rating: {}'.format(np.mean(self.ratings[aspect])) \
                    .ljust(max_txt_len) + '\n'
-        big_str += 'positive: {} %'.format(good).ljust(max_txt_len) + '\n'
-        big_str += 'mixed: {} %'.format(mixed).ljust(max_txt_len) + '\n'
-        big_str += 'negative: {} %'.format(bad).ljust(max_txt_len) + '\n\n'
+        big_str += 'positive: {}%'.format(good).ljust(max_txt_len) + '\n'
+        big_str += 'mixed: {}%'.format(mixed).ljust(max_txt_len) + '\n'
+        big_str += 'negative: {}%'.format(bad).ljust(max_txt_len) + '\n\n'
 
         for category, label, total_lines in categories:
             big_str += label.ljust(max_txt_len) + '\n'
@@ -213,7 +215,7 @@ class Polarizer(object):
                     reach -= 1
 
                 if frag:
-                    big_str += frag.ljust(max_txt_len) + '\n'
+                    big_str += frag.strip().ljust(max_txt_len) + '\n'
                     if total_lines:
                         total_lines -= 1
 
@@ -233,6 +235,10 @@ class Polarizer(object):
         '''
         for aspect in aspect_list:
             self._aspect_review_dict(corpus, aspect)
+
+            self.aspect_pol_list[aspect]['pos'] = []
+            self.aspect_pol_list[aspect]['mixed'] = []
+            self.aspect_pol_list[aspect]['neg'] = []
 
             for review in self.aspect_dict[aspect]:
                 self._polarity_class(aspect, review)

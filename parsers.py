@@ -163,16 +163,6 @@ class Unigramer(object):
 
         return unigrams
 
-    # def get_unigram_count(self):
-    #     '''
-    #     INPUT: None
-    #     OUTPUT: dict
-    #
-    #     Returns the cnt_dict object. Required as input for candidate_bigrams
-    #         function of Bigramer class.
-    #     '''
-    #     return self.cnt_dict
-
     def update_review_count(self, bigramer):
         '''
         IMPUT: set, Bigramer
@@ -198,7 +188,7 @@ class Bigramer(object):
         self.bigrams = None
         self.bigram_words = None
         self.distances = defaultdict(list)
-        self.ordering = defaultdict(lambda: [0, 0])
+        self.ordering = defaultdict(list)
         self.pmi = defaultdict(float)
         self.rev_dict = defaultdict(set)
         self.sent_dict = defaultdict(list)
@@ -250,6 +240,9 @@ class Bigramer(object):
                                                      token.lemma_]))
                             dist = item.i - token.i
                             word_sort = item.lemma_ < token.lemma_
+
+                            if not self.ordering[bigrm]:
+                                self.ordering[bigrm] = [0, 0]
 
                             self.distances[bigrm].append(abs(dist))
                             self.rev_dict[bigrm].add(sent.review_idx)
