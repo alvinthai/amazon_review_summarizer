@@ -301,7 +301,7 @@ class Polarizer(object):
         else:
             return big_str
 
-    def flask_output(self, aspect, pol_class, max_txt_len=80):
+    def flask_output(self, aspect, max_txt_len=80):
         '''
         INPUT: str, str, int
         OUTPUT: str
@@ -313,44 +313,59 @@ class Polarizer(object):
 
         Outputs a string of html/javascript code for input into flask/jinja
         '''
-        arr = self.aspect_pol_list[aspect][pol_class]
-        big_str = ""
-        js_arr = []
+        dic = self.aspect_pol_list[aspect]
+        big_str, js_arr, cats = "", [], ['pos', 'mixed', 'neg']
+        html_panel = ['''<div id="home" class="tab-pane fade in active">''',
+                      '''<div id="menu1" class="tab-pane fade">''',
+                      '''<div id="menu2" class="tab-pane fade">''']
 
-        for i, (txt, asp_idx, _, _) in enumerate(arr):
-            txt = unicodedata.normalize('NFKD', txt).encode('ascii', 'ignore')
-            reach = 10
-            frag = txt
+        for ci, cat in enumerate(cats):
+            cat_arr = []
 
-            while len(frag) > max_txt_len:
-                chars = txt.split(" ")
+            big_str += html_panel[ci]
+            big_str += '''<div class="col-md-75"
+                style="width:37.5%; padding-right:0.6%">'''
+            big_str += '''<div class="well">'''
 
-                lst = map(len, chars)
-                lst = np.hstack([0, np.cumsum(lst)])
-                lst = np.arange(lst.shape[0]) + lst
+            for ri, (txt, asp_idx, _, _) in enumerate(dic[cat]):
+                txt = unicodedata.normalize('NFKD', txt).encode('ascii',
+                                                                'ignore')
+                reach, frag = 10, txt
 
-                where = np.searchsorted(lst, asp_idx)
-                start = lst[max(0, where - reach)]
-                end = lst[min(where + reach + 1, len(lst) - 1)]
+                while len(frag) > max_txt_len:
+                    chars = txt.split(" ")
 
-                frag = txt[start:end]
-                reach -= 1
+                    lst = map(len, chars)
+                    lst = np.hstack([0, np.cumsum(lst)])
+                    lst = np.arange(lst.shape[0]) + lst
 
-            if frag:
-                big_str += '''<hr>'''
-                big_str += '''<div class="row">'''
-                big_str += '''<div class="col-md-12">'''
-                big_str += '''<p id="prod1_asp1_pos{0}">'''.format(i)
-                big_str += '''<script>
-                    document.getElementById("prod1_asp1_pos{0}").innerHTML =
-                    prod1_asp1_pos[{0}][0]</script>'''.format(i)
-                big_str += '''<p style="float:right">
-                    <a style="color:#337ab7"
-                    onclick="snippet(prod1_asp1_pos, {})">Expand Snippet</a>
-                    </p>'''.format(i)
-                big_str += '''</p>'''
-                big_str += '''</div>'''
-                big_str += '''</div>'''
-                js_arr.append([frag.strip(), txt])
+                    where = np.searchsorted(lst, asp_idx)
+                    start = lst[max(0, where - reach)]
+                    end = lst[min(where + reach + 1, len(lst) - 1)]
+
+                    frag = txt[start:end]
+                    reach -= 1
+
+                if frag:
+                    big_str += '''<hr>'''
+                    big_str += '''<div class="row">'''
+                    big_str += '''<div class="col-md-12">'''
+                    big_str += '''<p id="asp{0}_prd{1}_{2}_{3}">'''\
+                        .format(0, 0, ci, ri)
+                    big_str += '''<script> document.getElementById(
+                        "asp{0}_prd{1}_{2}_{3}").innerHTML=
+                        review_txt[{0}][{1}][{2}][{3}][0]</script>'''\
+                        .format(0, 0, ci, ri)
+                    big_str += '''<p style="float:right">
+                        <a style="color:#337ab7"
+                        onclick="snippet(review_txt, {0}, {1}, {2}, {3})">
+                        Expand Snippet</a></p>'''.format(0, 0, ci, ri)
+                    big_str += '''</p>'''
+                    big_str += '''</div>'''
+                    big_str += '''</div>'''
+                    cat_arr.append([frag.strip(), txt])
+
+            big_str += '''</div></div></div>'''
+            js_arr.append(cat_arr)
 
         return big_str, js_arr

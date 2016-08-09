@@ -68,20 +68,11 @@
     }
 </script>
 <script>
-    function myFunction() {
-        if (document.getElementById("test_review_txt2").innerHTML == a[0]) {
-            document.getElementById("test_review_txt2").innerHTML = a[1];
+    function snippet(arr, asp_i, prd_i, row_i, pol_i) {
+        if (document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML == arr[asp_i][prd_i][row_i][pol_i][0]) {
+            document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML = arr[asp_i][prd_i][row_i][pol_i][1];
         } else {
-            document.getElementById("test_review_txt2").innerHTML = a[0];
-        }
-    }
-</script>
-<script>
-    function snippet(arr, row) {
-        if (document.getElementById("prod1_asp1_pos"+row).innerHTML == arr[row][0]) {
-            document.getElementById("prod1_asp1_pos"+row).innerHTML = arr[row][1];
-        } else {
-            document.getElementById("prod1_asp1_pos"+row).innerHTML = arr[row][0];
+            document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML = arr[asp_i][prd_i][row_i][pol_i][0];
         }
     }
 </script>
@@ -89,7 +80,7 @@
 <script> aspects1_f = {{aspects_f}} </script>
 <script> aspect1_pct = {{aspects_pct}} </script>
 <script> ratings1 = {{ratings}} </script>
-<script> prod1_asp1_pos = {{pos_txt_arr|safe}} </script>
+<script> review_txt = {{review_txt|safe}} </script>
 
 <body>
     <!-- Navigation -->
@@ -246,80 +237,7 @@
                       </ul>
 
                       <div class="tab-content">
-                        <div id="home" class="tab-pane fade in active">
-                            <div class="col-md-75" style="width:37.5%; padding-right:0.6%">
-                                <div class="well">
-
-                                    {{js_str|safe}}
-
-                                </div>
-                            </div>
-                            <div class="col-md-75" style="width:37.5%; padding-left:0.6%">
-                                <div class="well">
-
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star-empty"></span>
-                                            <span class="pull-right">
-                                                <a href="http://www.google.com" style="color:#337ab7">Full Review</a>
-                                            </span>
-                                            <p id="test_review_txt2"></p>
-                                            <script>a = ["This product was great in terms of quality. I would definitely buy another!",
-                                                        "This product was great in terms of quality. I would definitely buy another! But it is so damn expensive."];
-                                                    document.getElementById("test_review_txt2").innerHTML = a[0]</script>
-                                            <span class="pull-right">
-                                                <a style="color:#337ab7" onclick="myFunction()">Expand Snippet</a>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star-empty"></span>
-                                            Anonymous
-                                            <span class="pull-right">12 days ago</span>
-                                            <p>I've alredy ordered another one!</p>
-                                        </div>
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star-empty"></span>
-                                            Anonymous
-                                            <span class="pull-right">15 days ago</span>
-                                            <p>I've seen some better than this, but not at this price. I definitely recommend this item.</p>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                        <div id="menu1" class="tab-pane fade">
-                          <h3>Menu 1</h3>
-                          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                        </div>
-                        <div id="menu2" class="tab-pane fade">
-                          <h3>Menu 2</h3>
-                          <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
-                        </div>
+                        {{js_str|safe}}
                     </div>
 
                 </div>
