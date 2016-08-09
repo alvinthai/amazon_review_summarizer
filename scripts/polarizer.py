@@ -38,6 +38,11 @@ class Polarizer(object):
             ratings (dict):         dictionary with aspect as key and customer
                                     ratings for reviews containing aspect as
                                     values
+            top_asps (list):        list of lists of the top aspects for the
+                                    product. First list is a string list of the
+                                    aspects. Second list is the review count
+                                    frequency of how often aspects in first
+                                    list appear.
             unigramer (Unigramer):  stores Unigramer class
         '''
         self.aspect_dict = dict()
@@ -46,6 +51,7 @@ class Polarizer(object):
         self.bigramer = bigramer
         self.name = None
         self.ratings = defaultdict(list)
+        self.top_asps = None
         self.unigramer = unigramer
 
     def _aspect_review_dict(self, corpus, aspect):
@@ -134,7 +140,8 @@ class Polarizer(object):
         aspect_idx = self.aspect_dict[aspect][review]['first_aspect_idx']
         rating = self.aspect_dict[aspect][review]['rating']
         review_txt = self.aspect_dict[aspect][review]['sentences']
-
+        review_txt = unicodedata.normalize('NFKD', review_txt).encode('ascii',
+                                                                      'ignore')
         pol_blob = round(TextBlob(review_txt).sentiment.polarity, 3)
 
         if rating == 5 and pol_blob > 0.1:
@@ -202,7 +209,32 @@ class Polarizer(object):
 
         self.aspect_pct[aspect] = [pos, mixed, neg]
 
-    def polarize_aspects(self, corpus, aspect_list):
+    def _top_aspects(self):
+        '''
+        INPUT: None
+        OUTPUT: None
+
+        Adds a list of the top aspects and a list of how frequently they appear
+        to the Polarizer object
+        '''
+        unigramer, bigramer = self.unigramer, self.bigramer
+
+        asps = list(unigramer.unigrams)
+        bigrams = list(bigramer.bigrams)
+
+        aspects_rev_f = [len(unigramer.rev_dict[unigram]) for unigram in asps]
+        bigrams_rev_f = [len(bigramer.rev_dict[bigram]) for bigram in bigrams]
+
+        asps.extend(bigrams)
+        aspects_rev_f.extend(bigrams_rev_f)
+
+        top_asps = sorted(zip(asps, aspects_rev_f), key=lambda x: x[1],
+                          reverse=True)
+        top_asps = [[asp[0] for asp in top_asps], [asp[1] for asp in top_asps]]
+
+        self.top_asps = top_asps
+
+    def polarize_aspects(self, corpus, aspect_list=None):
         '''
         INPUT: ReviewSents, list(str)
         OUTPUT: None
@@ -215,6 +247,10 @@ class Polarizer(object):
         aspect_list
         '''
         self.name = corpus.name
+
+        if not aspect_list:
+            self._top_aspects()
+            aspect_list = self.top_asps[0]
 
         for aspect in aspect_list:
             self._aspect_review_dict(corpus, aspect)
@@ -300,72 +336,3 @@ class Polarizer(object):
             print big_str
         else:
             return big_str
-
-    def flask_output(self, aspect, max_txt_len=80):
-        '''
-        INPUT: str, str, int
-        OUTPUT: str
-
-        Args:
-            aspect: aspect to print result for
-            pol_class: 'pos', 'mixed', or 'neg' sentiment
-            max_txt_len: max length for each printed line
-
-        Outputs a string of html/javascript code for input into flask/jinja
-        '''
-        dic = self.aspect_pol_list[aspect]
-        big_str, js_arr, cats = "", [], ['pos', 'mixed', 'neg']
-        html_panel = ['''<div id="home" class="tab-pane fade in active">''',
-                      '''<div id="menu1" class="tab-pane fade">''',
-                      '''<div id="menu2" class="tab-pane fade">''']
-
-        for ci, cat in enumerate(cats):
-            cat_arr = []
-
-            big_str += html_panel[ci]
-            big_str += '''<div class="col-md-75"
-                style="width:37.5%; padding-right:0.6%">'''
-            big_str += '''<div class="well">'''
-
-            for ri, (txt, asp_idx, _, _) in enumerate(dic[cat]):
-                txt = unicodedata.normalize('NFKD', txt).encode('ascii',
-                                                                'ignore')
-                reach, frag = 10, txt
-
-                while len(frag) > max_txt_len:
-                    chars = txt.split(" ")
-
-                    lst = map(len, chars)
-                    lst = np.hstack([0, np.cumsum(lst)])
-                    lst = np.arange(lst.shape[0]) + lst
-
-                    where = np.searchsorted(lst, asp_idx)
-                    start = lst[max(0, where - reach)]
-                    end = lst[min(where + reach + 1, len(lst) - 1)]
-
-                    frag = txt[start:end]
-                    reach -= 1
-
-                if frag:
-                    big_str += '''<hr>'''
-                    big_str += '''<div class="row">'''
-                    big_str += '''<div class="col-md-12">'''
-                    big_str += '''<p id="asp{0}_prd{1}_{2}_{3}">'''\
-                        .format(0, 0, ci, ri)
-                    big_str += '''<script> document.getElementById(
-                        "asp{0}_prd{1}_{2}_{3}").innerHTML=
-                        review_txt[{0}][{1}][{2}][{3}][0]</script>'''\
-                        .format(0, 0, ci, ri)
-                    big_str += '''<p style="float:right">
-                        <a style="color:#337ab7"
-                        onclick="snippet(review_txt, {0}, {1}, {2}, {3})">
-                        Expand Snippet</a></p>'''.format(0, 0, ci, ri)
-                    big_str += '''</p>'''
-                    big_str += '''</div>'''
-                    big_str += '''</div>'''
-                    cat_arr.append([frag.strip(), txt])
-
-            big_str += '''</div></div></div>'''
-            js_arr.append(cat_arr)
-
-        return big_str, js_arr

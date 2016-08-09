@@ -10,19 +10,18 @@ app = Flask(__name__)
 with open('data/polarizer1.pkl', 'rb') as f:
     pol1 = cPickle.load(f)
 
-aspects1f, aspects1 = get_top_aspects(pol1.unigramer, pol1.bigramer,
-                                      printing=False)
-en_aspects1 = [[x[0], x[1][0]] for x in enumerate(aspects1f[0:10])]
-aspects1f = [x[1] for x in aspects1f[0:10]]
+[aspects1, aspects1f] = pol1.top_asps
+aspects1, aspects1f = aspects1[0:10], aspects1f[0:10]
+en_aspects1 = [[x[0], x[1]] for x in enumerate(aspects1)]
 
-aspects1_pct = np.array([pol1.aspect_pct[x] for x in aspects1[0:10]])
+aspects1_pct = np.array([pol1.aspect_pct[x] for x in aspects1])
 aspects1_pct_vis = np.apply_along_axis(lambda x: 5 + x / sum(x) * 85, 1,
                                        aspects1_pct)
 
 aspects1_pct = np.hstack([aspects1_pct, aspects1_pct_vis]).tolist()
 ratings1 = [np.mean(pol1.ratings[x]) for x in aspects1]
 
-test_str, test_arr = pol1.flask_output(aspects1[0])
+test_str, test_arr = flask_output(aspects1[0], pol1)
 test_arr = [[test_arr]]
 
 # Form page to submit

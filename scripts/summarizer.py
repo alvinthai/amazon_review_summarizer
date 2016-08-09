@@ -1,60 +1,33 @@
 from __future__ import division
+import numpy as np
 import pandas as pd
 
 
-def get_top_aspects(unigramer, bigramer, n=10, printing=True):
+def common_features(polarizer1, polarizer2, min_pct=0.03, n=10, printing=True):
     '''
-    INPUT: Unigramer, Bigramer, int, bool
-    OUTPUT: list(tuple), list(str)
-
-    Args:
-        n: number of reviews to print
-        printing: option to print top n results
-
-    Returns a list of the top appearing aspects (with count) and a list of
-    the top appearing aspects (without count) across all reviews.
-    Prints out top n aspects
-    '''
-    aspects = list(unigramer.unigrams)
-    bigrams = list(bigramer.bigrams)
-
-    aspects_rev_f = [len(unigramer.rev_dict[unigram]) for unigram in aspects]
-    bigrams_rev_f = [len(bigramer.rev_dict[bigram]) for bigram in bigrams]
-
-    aspects.extend(bigrams)
-    aspects_rev_f.extend(bigrams_rev_f)
-
-    top_aspects = sorted(zip(aspects, aspects_rev_f),
-                         key=lambda x: x[1], reverse=True)
-    aspects = [asp[0] for asp in top_aspects]
-
-    if printing:
-        print top_aspects[0:n]
-
-    return top_aspects, aspects
-
-
-def common_features(aspects1, aspects2, unigramer1, unigramer2, min_pct=0.03,
-                    n=10, printing=True):
-    '''
-    INPUT: list(tuples), list(tuples), Unigramer, Unigramer, float,
-           int, bool
+    INPUT: Polarizer, Polarizer, float, int, bool
     OUTPUT: np.array([aspect, freq1, freq2]), list
 
     Args:
-        aspect1, aspect2: list output from get_top_aspects
         min_pct: percentage of reviews aspect must appear in
         n: number of reviews to print
         printing: option to print top n results
 
-    Outputs a list of the common aspects between two products.
+    Finds the common aspects between two products and outputs a list of these
+    aspects with review frequency and a list of these aspects without review
+    frequency.
 
     Results of output are sorted by f1 score like calculation using the
     frequencies the aspect appears in product1 and product2
     '''
-    comm_aspects = pd.merge(pd.DataFrame(aspects1, columns=['aspect', 'freq']),
-                            pd.DataFrame(aspects2, columns=['aspect', 'freq']),
-                            on='aspect', suffixes=('1', '2'))
+    unigramer1, unigramer2 = polarizer1.unigramer, polarizer2.unigramer
+
+    df1 = pd.concat([pd.Series(polarizer1.top_asps[0], name='aspect'),
+                     pd.Series(polarizer1.top_asps[1], name='freq')], axis=1)
+    df2 = pd.concat([pd.Series(polarizer2.top_asps[0], name='aspect'),
+                     pd.Series(polarizer2.top_asps[1], name='freq')], axis=1)
+
+    comm_aspects = pd.merge(df1, df2, on='aspect', suffixes=('1', '2'))
 
     comm_aspects['pct1'] = comm_aspects['freq1'] / unigramer1.n_reviews
     comm_aspects['pct2'] = comm_aspects['freq2'] / unigramer2.n_reviews
@@ -113,3 +86,90 @@ def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
         big_str += comb_str + '\n'
 
     print big_str
+
+
+def _html_coder(ci, cat, dic, max_txt_len, curr_str):
+    '''
+    INPUT: int, str, dict, int, str
+    OUTPUT: str, list
+
+    Args:
+        ci: polarity class index (0: 'pos', 1: 'mixed', 2: 'neg')
+        cat: label for polarity class
+        dic: dictionary to extract review text from with cat keys
+        max_txt_len: max length for each printed line
+        curr_str: current html string to be modified
+
+    Appends review text data to an existing html string
+    '''
+    txt_list = []
+
+    for ri, (txt, asp_idx, _, _) in enumerate(dic[cat]):
+        reach, frag = 10, txt
+
+        while len(frag) > max_txt_len:
+            chars = txt.split(" ")
+
+            lst = map(len, chars)
+            lst = np.hstack([0, np.cumsum(lst)])
+            lst = np.arange(lst.shape[0]) + lst
+
+            where = np.searchsorted(lst, asp_idx)
+            start = lst[max(0, where - reach)]
+            end = lst[min(where + reach + 1, len(lst) - 1)]
+
+            frag = txt[start:end]
+            reach -= 1
+
+        if frag:
+            curr_str += '''<hr>'''
+            curr_str += '''<div class="row">'''
+            curr_str += '''<div class="col-md-12">'''
+            curr_str += '''<p id="asp{0}_prd{1}_{2}_{3}">'''\
+                .format(0, 0, ci, ri)
+            curr_str += '''<script> document.getElementById(
+                "asp{0}_prd{1}_{2}_{3}").innerHTML=
+                review_txt[{0}][{1}][{2}][{3}][0]</script>'''\
+                .format(0, 0, ci, ri)
+            curr_str += '''<p style="float:right">
+                <a style="color:#337ab7"
+                onclick="snippet(review_txt, {0}, {1}, {2}, {3})">
+                Expand Snippet</a></p>'''.format(0, 0, ci, ri)
+            curr_str += '''</p>'''
+            curr_str += '''</div>'''
+            curr_str += '''</div>'''
+            txt_list.append([frag.strip(), txt])
+
+    return curr_str, txt_list
+
+
+def flask_output(aspect, polarizer1, polarizer2=None, max_txt_len=80):
+    '''
+    INPUT: str, Polarizer, Polarizer, int
+    OUTPUT: str, list
+
+    Args:
+        aspect: aspect to print result for
+        max_txt_len: max length for each printed line
+
+    Outputs a string of html/javascript and a three-dimensional array of review
+    text for input into flask/jinja
+    '''
+    dic1 = polarizer1.aspect_pol_list[aspect]
+    big_str, js_arr, cats = "", [], ['pos', 'mixed', 'neg']
+    html_panel = ['''<div id="home" class="tab-pane fade in active">''',
+                  '''<div id="menu1" class="tab-pane fade">''',
+                  '''<div id="menu2" class="tab-pane fade">''']
+
+    for ci, cat in enumerate(cats):
+        big_str += html_panel[ci]
+        big_str += '''<div class="col-md-75"
+            style="width:37.5%; padding-right:0.6%">'''
+        big_str += '''<div class="well">'''
+
+        big_str, txt_list = _html_coder(ci, cat, dic1, max_txt_len, big_str)
+
+        big_str += '''</div></div></div>'''
+        js_arr.append(txt_list)
+
+    return big_str, js_arr
