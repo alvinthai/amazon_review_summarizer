@@ -16,6 +16,7 @@
 
     <!-- Custom CSS -->
     <link href="../static/css/shop-item.css" rel="stylesheet">
+    <link href="../static/css/my_custom.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -26,11 +27,53 @@
 
 </head>
 
+<script>
+    function aspectToggler(n) {
+        if (document.getElementById("cat"+n).className == "list-group-item") {
+            {% for asp in aspects %}
+            document.getElementById("cat{{asp[0]}}").className = "list-group-item";
+            {% endfor %}
+            document.getElementById("cat"+n).className = "list-group-item active";
+
+            document.getElementById("p1_p").innerHTML = Math.round(aspect1_pct[n][0])+"%";
+            document.getElementById("p1_p").style["width"] = aspect1_pct[n][3]+"%";
+            document.getElementById("p1_m").innerHTML = Math.round(aspect1_pct[n][1])+"%";
+            document.getElementById("p1_m").style["width"] = aspect1_pct[n][4]+"%";
+            document.getElementById("p1_n").innerHTML = Math.round(aspect1_pct[n][2])+"%";
+            document.getElementById("p1_n").style["width"] = aspect1_pct[n][5]+"%";
+            document.getElementById("p1_r").innerHTML = aspects1_f[n]+" Reviews";
+
+            document.getElementById("p1_avg").innerHTML = "Average: "+Math.round(ratings1[n]*100)/100+" stars";
+            starShade(ratings1[n]);
+        }
+    }
+</script>
+
+<script>
+    function starShade(rate) {
+        document.getElementById("star1_p1").className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star2_p1").className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star3_p1").className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star4_p1").className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star5_p1").className = "glyphicon glyphicon-star nostar";
+        if (rate >= 0.25) {document.getElementById("star1_p1").className = "glyphicon glyphicon-star half"};
+        if (rate >= 0.75) {document.getElementById("star1_p1").className = "glyphicon glyphicon-star"};
+        if (rate >= 1.25) {document.getElementById("star2_p1").className = "glyphicon glyphicon-star half"};
+        if (rate >= 1.75) {document.getElementById("star2_p1").className = "glyphicon glyphicon-star"};
+        if (rate >= 2.25) {document.getElementById("star3_p1").className = "glyphicon glyphicon-star half"};
+        if (rate >= 2.75) {document.getElementById("star3_p1").className = "glyphicon glyphicon-star"};
+        if (rate >= 3.25) {document.getElementById("star4_p1").className = "glyphicon glyphicon-star half"};
+        if (rate >= 3.75) {document.getElementById("star4_p1").className = "glyphicon glyphicon-star"};
+        if (rate >= 4.25) {document.getElementById("star5_p1").className = "glyphicon glyphicon-star half"};
+        if (rate >= 4.75) {document.getElementById("star5_p1").className = "glyphicon glyphicon-star"};
+    }
+</script>
+
 <script> aspects1_f = {{aspects_f}} </script>
 <script> aspect1_pct = {{aspects_pct}} </script>
+<script> ratings1 = {{ratings}} </script>
 
 <body>
-
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container">
@@ -76,9 +119,9 @@
                 <div class="list-group">
                 {% for asp in aspects %}
                     {% if asp[0] == 0 %}
-                    <a id="cat{{asp[0]}}" class="list-group-item active" onclick="myFunction2({{asp[0]}})">{{asp[1]}}</a>
+                    <a id="cat{{asp[0]}}" class="list-group-item active" onclick="aspectToggler({{asp[0]}})">{{asp[1]}}</a>
                     {% else %}
-                    <a id="cat{{asp[0]}}" class="list-group-item" onclick="myFunction2({{asp[0]}})">{{asp[1]}}</a>
+                    <a id="cat{{asp[0]}}" class="list-group-item" onclick="aspectToggler({{asp[0]}})">{{asp[1]}}</a>
                     {% endif %}
                 {% endfor %}
                 </div>
@@ -110,15 +153,16 @@
                       </div>
                     </div>
                     <div class="ratings">
-                        <p id="p1_r" class="pull-right">{{aspects_f[0]}} reviews</p>
-                        <p>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star-empty"></span>
-                            4.0 stars
+                        <p style='margin-bottom:0px'>
+                            <span id="star1_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star2_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star3_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star4_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star5_p1" class="glyphicon glyphicon-star half"></span>
                         </p>
+                        <script>starShade({{ratings[0]|round(2)}})</script>
+                        <p id="p1_r" class="pull-right">{{aspects_f[0]}} reviews</p>
+                        <p id="p1_avg">Average: {{ratings[0]|round(2)}} stars</p>
                     </div>
                 </div>
 
@@ -334,35 +378,6 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="../static/js/bootstrap.min.js"></script>
-
-    <script>
-        function myFunction() {
-            if (document.getElementById("test_review_txt").innerHTML == a[0]) {
-                document.getElementById("test_review_txt").innerHTML = a[1];
-            } else {
-                document.getElementById("test_review_txt").innerHTML = a[0];
-            }
-        }
-    </script>
-
-    <script>
-        function myFunction2(n) {
-            if (document.getElementById("cat"+n).className == "list-group-item") {
-                {% for asp in aspects %}
-                document.getElementById("cat{{asp[0]}}").className = "list-group-item";
-                {% endfor %}
-                document.getElementById("cat"+n).className = "list-group-item active";
-
-                document.getElementById("p1_p").innerHTML = Math.round(aspect1_pct[n][0])+"%";
-                document.getElementById("p1_p").style["width"] = aspect1_pct[n][3]+"%"
-                document.getElementById("p1_m").innerHTML = Math.round(aspect1_pct[n][1])+"%";
-                document.getElementById("p1_m").style["width"] = aspect1_pct[n][4]+"%"
-                document.getElementById("p1_n").innerHTML = Math.round(aspect1_pct[n][2])+"%";
-                document.getElementById("p1_n").style["width"] = aspect1_pct[n][5]+"%"
-                document.getElementById("p1_r").innerHTML = aspects1_f[n]+" Reviews";
-            }
-        }
-    </script>
 
 </body>
 

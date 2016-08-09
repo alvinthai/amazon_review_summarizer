@@ -1,0 +1,31 @@
+/* CSS used here will be applied after bootstrap.css */
+.half {
+    position:relative;
+}
+.font{
+	font-size:6em;
+}
+.half:after {
+    content:'';
+    position:absolute;
+    z-index:1;
+    background: white;
+    width: 50%;
+    height: 100%;
+    left: 47%;
+}
+.nostar {
+    position:relative;
+}
+.font{
+	font-size:6em;
+}
+.nostar:after {
+    content:'';
+    position:absolute;
+    z-index:1;
+    background: white;
+    width: 100%;
+    height: 100%;
+    left: 0%;
+}

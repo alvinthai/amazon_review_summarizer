@@ -2,13 +2,13 @@ from __future__ import division
 from scripts.polarizer import *
 from scripts.summarizer import *
 from flask import Flask, request, render_template
+import cPickle
 import numpy as np
-import pickle
 
 app = Flask(__name__)
 
-with open('data/polarizer1.p', 'rb') as f:
-    pol1 = pickle.load(f)
+with open('data/polarizer1.pkl', 'rb') as f:
+    pol1 = cPickle.load(f)
 
 aspects1f, aspects1 = get_top_aspects(pol1.unigramer, pol1.bigramer,
                                       printing=False)
@@ -20,13 +20,15 @@ aspects1_pct_vis = np.apply_along_axis(lambda x: 5 + x / sum(x) * 85, 1,
                                        aspects1_pct)
 
 aspects1_pct = np.hstack([aspects1_pct, aspects1_pct_vis]).tolist()
+ratings1 = [np.mean(pol1.ratings[x]) for x in aspects1]
 
 
 # Form page to submit
 @app.route('/')
 def index():
     return render_template('app_results.html', aspects=en_aspects1,
-                           aspects_f=aspects1f, aspects_pct=aspects1_pct)
+                           aspects_f=aspects1f, aspects_pct=aspects1_pct,
+                           ratings=ratings1)
 
 # My word counte app
 # @app.route('/predict', methods=['POST'] )
