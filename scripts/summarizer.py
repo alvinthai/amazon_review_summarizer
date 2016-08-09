@@ -5,13 +5,14 @@ import pandas as pd
 def get_top_aspects(unigramer, bigramer, n=10, printing=True):
     '''
     INPUT: Unigramer, Bigramer, int, bool
-    OUTPUT: list(tuple)
+    OUTPUT: list(tuple), list(str)
 
     Args:
         n: number of reviews to print
         printing: option to print top n results
 
-    Returns a list of the top appearing aspects across all reviews
+    Returns a list of the top appearing aspects (with count) and a list of
+    the top appearing aspects (without count) across all reviews.
     Prints out top n aspects
     '''
     aspects = list(unigramer.unigrams)
@@ -25,11 +26,12 @@ def get_top_aspects(unigramer, bigramer, n=10, printing=True):
 
     top_aspects = sorted(zip(aspects, aspects_rev_f),
                          key=lambda x: x[1], reverse=True)
+    aspects = [asp[0] for asp in top_aspects]
 
     if printing:
         print top_aspects[0:n]
 
-    return top_aspects
+    return top_aspects, aspects
 
 
 def common_features(aspects1, aspects2, unigramer1, unigramer2, min_pct=0.03,

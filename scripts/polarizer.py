@@ -299,3 +299,46 @@ class Polarizer(object):
             print big_str
         else:
             return big_str
+
+    def flask_output(self, aspect, pol_class, max_txt_len=80):
+        '''
+        INPUT: str, str, int
+        OUTPUT: str
+
+        Args:
+            aspect: aspect to print result for
+            pol_class: 'pos', 'mixed', or 'neg' sentiment
+            max_txt_len: max length for each printed line
+
+        Outputs a string of html/javascript code for input into flask/jinja
+        '''
+        arr = self.aspect_pol_list[aspect][pol_class]
+        big_str = ""
+
+        for txt, asp_idx, _, _ in arr:
+            reach = 10
+            frag = txt
+
+            while len(frag) > max_txt_len:
+                chars = txt.split(" ")
+
+                lst = map(len, chars)
+                lst = np.hstack([0, np.cumsum(lst)])
+                lst = np.arange(lst.shape[0]) + lst
+
+                where = np.searchsorted(lst, asp_idx)
+                start = lst[max(0, where - reach)]
+                end = lst[min(where + reach + 1, len(lst) - 1)]
+
+                frag = txt[start:end]
+                reach -= 1
+
+            if frag:
+                big_str += '''<hr>'''
+                big_str += '''<div class="row">'''
+                big_str += '''<div class="col-md-12">'''
+                big_str += frag.strip().ljust(max_txt_len)
+                big_str += '''</div>'''
+                big_str += '''</div>'''
+
+        return big_str

@@ -22,13 +22,14 @@ aspects1_pct_vis = np.apply_along_axis(lambda x: 5 + x / sum(x) * 85, 1,
 aspects1_pct = np.hstack([aspects1_pct, aspects1_pct_vis]).tolist()
 ratings1 = [np.mean(pol1.ratings[x]) for x in aspects1]
 
+test_reviews = pol1.flask_output(aspects1[0], 'pos')
 
 # Form page to submit
 @app.route('/')
 def index():
     return render_template('app_results.html', aspects=en_aspects1,
                            aspects_f=aspects1f, aspects_pct=aspects1_pct,
-                           ratings=ratings1)
+                           ratings=ratings1, pos_txt_arr=test_reviews)
 
 # My word counte app
 # @app.route('/predict', methods=['POST'] )

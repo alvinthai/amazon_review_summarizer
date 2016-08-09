@@ -48,7 +48,6 @@
         }
     }
 </script>
-
 <script>
     function starShade(rate) {
         document.getElementById("star1_p1").className = "glyphicon glyphicon-star nostar";
@@ -66,6 +65,15 @@
         if (rate >= 3.75) {document.getElementById("star4_p1").className = "glyphicon glyphicon-star"};
         if (rate >= 4.25) {document.getElementById("star5_p1").className = "glyphicon glyphicon-star half"};
         if (rate >= 4.75) {document.getElementById("star5_p1").className = "glyphicon glyphicon-star"};
+    }
+</script>
+<script>
+    function myFunction() {
+        if (document.getElementById("test_review_txt2").innerHTML == a[0]) {
+            document.getElementById("test_review_txt2").innerHTML = a[1];
+        } else {
+            document.getElementById("test_review_txt2").innerHTML = a[0];
+        }
     }
 </script>
 
@@ -232,57 +240,7 @@
                             <div class="col-md-75" style="width:37.5%; padding-right:0.6%">
                                 <div class="well">
 
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star-empty"></span>
-                                            <span class="pull-right">
-                                                <a href="http://www.google.com" style="color:#337ab7">Full Review</a>
-                                            </span>
-                                            <p id="test_review_txt"></p>
-                                            <script>a = ["This product was great in terms of quality. I would definitely buy another!",
-                                                        "This product was great in terms of quality. I would definitely buy another! But it is so damn expensive."];
-                                                    document.getElementById("test_review_txt").innerHTML = a[0]</script>
-                                            <span class="pull-right">
-                                                <a style="color:#337ab7" onclick="myFunction()">Expand Snippet</a>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star-empty"></span>
-                                            Anonymous
-                                            <span class="pull-right">12 days ago</span>
-                                            <p>I've alredy ordered another one!</p>
-                                        </div>
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star"></span>
-                                            <span class="glyphicon glyphicon-star-empty"></span>
-                                            Anonymous
-                                            <span class="pull-right">15 days ago</span>
-                                            <p>I've seen some better than this, but not at this price. I definitely recommend this item.</p>
-                                        </div>
-                                    </div>
+                                    {{pos_txt_arr|safe}}
 
                                 </div>
                             </div>
@@ -298,9 +256,16 @@
                                             <span class="glyphicon glyphicon-star"></span>
                                             <span class="glyphicon glyphicon-star"></span>
                                             <span class="glyphicon glyphicon-star-empty"></span>
-                                            Anonymous
-                                            <span class="pull-right">10 days ago</span>
-                                            <p>This product was great in terms of quality. I would definitely buy another!</p>
+                                            <span class="pull-right">
+                                                <a href="http://www.google.com" style="color:#337ab7">Full Review</a>
+                                            </span>
+                                            <p id="test_review_txt2"></p>
+                                            <script>a = ["This product was great in terms of quality. I would definitely buy another!",
+                                                        "This product was great in terms of quality. I would definitely buy another! But it is so damn expensive."];
+                                                    document.getElementById("test_review_txt2").innerHTML = a[0]</script>
+                                            <span class="pull-right">
+                                                <a style="color:#337ab7" onclick="myFunction()">Expand Snippet</a>
+                                            </span>
                                         </div>
                                     </div>
 
