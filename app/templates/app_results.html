@@ -76,10 +76,20 @@
         }
     }
 </script>
+<script>
+    function snippet(arr, row) {
+        if (document.getElementById("prod1_asp1_pos"+row).innerHTML == arr[row][0]) {
+            document.getElementById("prod1_asp1_pos"+row).innerHTML = arr[row][1];
+        } else {
+            document.getElementById("prod1_asp1_pos"+row).innerHTML = arr[row][0];
+        }
+    }
+</script>
 
 <script> aspects1_f = {{aspects_f}} </script>
 <script> aspect1_pct = {{aspects_pct}} </script>
 <script> ratings1 = {{ratings}} </script>
+<script> prod1_asp1_pos = {{pos_txt_arr|safe}} </script>
 
 <body>
     <!-- Navigation -->
@@ -240,7 +250,7 @@
                             <div class="col-md-75" style="width:37.5%; padding-right:0.6%">
                                 <div class="well">
 
-                                    {{pos_txt_arr|safe}}
+                                    {{js_str|safe}}
 
                                 </div>
                             </div>

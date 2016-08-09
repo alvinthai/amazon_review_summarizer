@@ -3,6 +3,7 @@ from afinn import Afinn
 from collections import defaultdict
 from textblob import TextBlob
 import numpy as np
+import unicodedata
 
 afinn = Afinn()
 
@@ -314,8 +315,10 @@ class Polarizer(object):
         '''
         arr = self.aspect_pol_list[aspect][pol_class]
         big_str = ""
+        js_arr = []
 
-        for txt, asp_idx, _, _ in arr:
+        for i, (txt, asp_idx, _, _) in enumerate(arr):
+            txt = unicodedata.normalize('NFKD', txt).encode('ascii', 'ignore')
             reach = 10
             frag = txt
 
@@ -337,8 +340,17 @@ class Polarizer(object):
                 big_str += '''<hr>'''
                 big_str += '''<div class="row">'''
                 big_str += '''<div class="col-md-12">'''
-                big_str += frag.strip().ljust(max_txt_len)
+                big_str += '''<p id="prod1_asp1_pos{0}">'''.format(i)
+                big_str += '''<script>
+                    document.getElementById("prod1_asp1_pos{0}").innerHTML =
+                    prod1_asp1_pos[{0}][0]</script>'''.format(i)
+                big_str += '''<p style="float:right">
+                    <a style="color:#337ab7"
+                    onclick="snippet(prod1_asp1_pos, {})">Expand Snippet</a>
+                    </p>'''.format(i)
+                big_str += '''</p>'''
                 big_str += '''</div>'''
                 big_str += '''</div>'''
+                js_arr.append([frag.strip(), txt])
 
-        return big_str
+        return big_str, js_arr
