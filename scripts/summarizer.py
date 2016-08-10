@@ -124,21 +124,23 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
             reach -= 1
 
         if frag:
-            curr_str += '''<hr>'''
+            curr_str += '<hr>'
             curr_str += '''<div class="row">'''
             curr_str += '''<div class="col-md-12">'''
             curr_str += '''<p id="asp{0}_prd{1}_{2}_{3}">'''\
                 .format(ai, pi, ci, ri)
-            curr_str += '''{}'''.format(frag)
+            curr_str += '{}'.format(frag.strip())
             curr_str += '''<p style="float:right">'''
-            curr_str += '''<a style="color:#337ab7" '''
+            curr_str += '''<a id="asp{0}_prd{1}_{2}_{3}_snip" '''\
+                .format(ai, pi, ci, ri)
+            curr_str += '''style="color:#337ab7" '''
             curr_str += '''onclick="snippet(review_txt, {0}, {1}, {2}, {3})'''\
                 .format(ai, pi, ci, ri)
             curr_str += '''">Expand Snippet</a></p>'''
-            curr_str += '''</p>'''
-            curr_str += '''</div>'''
-            curr_str += '''</div>'''
-            txt_list.append([frag.strip(), txt])
+            curr_str += '</p>'
+            curr_str += '</div>'
+            curr_str += '</div>'
+            txt_list.append([frag.strip() + " ", txt])
 
     return curr_str, txt_list
 
@@ -157,7 +159,9 @@ def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
     text for input into flask/jinja
     '''
     dic1 = polarizer1.aspect_pol_list[aspect]
-    big_str, js_arr, cats = "", [], ['pos', 'mixed', 'neg']
+    dic2 = polarizer2.aspect_pol_list[aspect] if polarizer2 else None
+
+    big_str, js_arr1, js_arr2, cats = "", [], [], ['pos', 'mixed', 'neg']
     html_panel = ['''<div id="home" class="tab-pane fade in active">''',
                   '''<div id="menu1" class="tab-pane fade">''',
                   '''<div id="menu2" class="tab-pane fade">''']
@@ -165,19 +169,34 @@ def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
     for ci, cat in enumerate(cats):
         big_str += html_panel[ci]
         big_str += '''<div class="col-md-75" '''
-        big_str += '''style="width:37.5%; padding-right:0.6%">'''
+        big_str += '''style="width:37.5%; padding-right:0.6%">''' \
+            if polarizer2 else '''style="width:75%">'''
         big_str += '''<div class="well">'''
 
         big_str, txt_list = _html_coder(ai, 0, ci, cat, dic1, max_txt_len,
                                         big_str)
 
-        big_str += '''</div></div></div>'''
-        js_arr.append(txt_list)
+        big_str += '</div></div>' if polarizer2 else '</div></div></div>'
+        js_arr1.append(txt_list)
+
+        if polarizer2:
+            big_str += '''<div class="col-md-75" '''
+            big_str += '''style="width:37.5%; padding-left:0.6%">'''
+            big_str += '''<div class="well">'''
+
+            big_str, txt_list = _html_coder(ai, 1, ci, cat, dic2, max_txt_len,
+                                            big_str)
+
+            big_str += '</div></div></div>'
+            js_arr2.append(txt_list)
+
+    js_arr = [js_arr1, js_arr2] if polarizer2 else [js_arr1]
 
     return big_str, js_arr
 
 
-def flask_output_iter(aspect_list, polarizer1, polarizer2=None, max_txt_len=80):
+def flask_output_iter(aspect_list, polarizer1, polarizer2=None,
+                      max_txt_len=80):
     '''
     INPUT: list, Polarizer, Polarizer, int
     OUTPUT: list, list
@@ -194,7 +213,6 @@ def flask_output_iter(aspect_list, polarizer1, polarizer2=None, max_txt_len=80):
     for ai, aspect in enumerate(aspect_list):
         big_str, js_arr = flask_output(ai, aspect, polarizer1, polarizer2,
                                        max_txt_len)
-        js_arr = [js_arr]
 
         html_strs.append(big_str)
         js_arrs.append(js_arr)

@@ -28,6 +28,11 @@
 </head>
 
 <script>
+    function htmlEntities(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+</script>
+<script>
     function aspectToggler(n) {
         if (document.getElementById("cat"+n).className == "list-group-item") {
             {% for asp in aspects %}
@@ -35,59 +40,64 @@
             {% endfor %}
             document.getElementById("cat"+n).className = "list-group-item active";
 
-            document.getElementById("p1_p").innerHTML = Math.round(aspect1_pct[n][0])+"%";
-            document.getElementById("p1_p").style["width"] = aspect1_pct[n][3]+"%";
-            document.getElementById("p1_m").innerHTML = Math.round(aspect1_pct[n][1])+"%";
-            document.getElementById("p1_m").style["width"] = aspect1_pct[n][4]+"%";
-            document.getElementById("p1_n").innerHTML = Math.round(aspect1_pct[n][2])+"%";
-            document.getElementById("p1_n").style["width"] = aspect1_pct[n][5]+"%";
-            document.getElementById("p1_r").innerHTML = aspects1_f[n]+" Reviews";
+            for (i = 0; i <= 1; i++) {
+                document.getElementById("p"+i+"_p").innerHTML = Math.round(aspects_pct[i][n][0])+"%";
+                document.getElementById("p"+i+"_p").style["width"] = aspects_pct[i][n][3]+"%";
+                document.getElementById("p"+i+"_m").innerHTML = Math.round(aspects_pct[i][n][1])+"%";
+                document.getElementById("p"+i+"_m").style["width"] = aspects_pct[i][n][4]+"%";
+                document.getElementById("p"+i+"_n").innerHTML = Math.round(aspects_pct[i][n][2])+"%";
+                document.getElementById("p"+i+"_n").style["width"] = aspects_pct[i][n][5]+"%";
+                document.getElementById("p"+i+"_r").innerHTML = aspects_f[n][i]+" Reviews";
 
-            document.getElementById("p1_avg").innerHTML = "Average: "+Math.round(ratings1[n]*100)/100+" stars";
-            starShade(ratings1[n]);
+                document.getElementById("p"+i+"_avg").innerHTML = "Average: "+Math.round(ratings[i][n]*100)/100+" stars";
+                starShade(ratings[i][n], i);
+            };
 
             t2 = document.getElementById("tab2").className;
             t3 = document.getElementById("tab3").className;
-            document.getElementById("review-html").innerHTML = js_str[n];
+            document.getElementById("review-html").innerHTML = html_str[n];
             if ( t2 == "active" ) { document.getElementById("tabclick1").click(); document.getElementById("tabclick2").click() };
             if ( t3 == "active" ) { document.getElementById("tabclick1").click(); document.getElementById("tabclick3").click() };
         }
     }
 </script>
 <script>
-    function starShade(rate) {
-        document.getElementById("star1_p1").className = "glyphicon glyphicon-star nostar";
-        document.getElementById("star2_p1").className = "glyphicon glyphicon-star nostar";
-        document.getElementById("star3_p1").className = "glyphicon glyphicon-star nostar";
-        document.getElementById("star4_p1").className = "glyphicon glyphicon-star nostar";
-        document.getElementById("star5_p1").className = "glyphicon glyphicon-star nostar";
-        if (rate >= 0.25) {document.getElementById("star1_p1").className = "glyphicon glyphicon-star half"};
-        if (rate >= 0.75) {document.getElementById("star1_p1").className = "glyphicon glyphicon-star"};
-        if (rate >= 1.25) {document.getElementById("star2_p1").className = "glyphicon glyphicon-star half"};
-        if (rate >= 1.75) {document.getElementById("star2_p1").className = "glyphicon glyphicon-star"};
-        if (rate >= 2.25) {document.getElementById("star3_p1").className = "glyphicon glyphicon-star half"};
-        if (rate >= 2.75) {document.getElementById("star3_p1").className = "glyphicon glyphicon-star"};
-        if (rate >= 3.25) {document.getElementById("star4_p1").className = "glyphicon glyphicon-star half"};
-        if (rate >= 3.75) {document.getElementById("star4_p1").className = "glyphicon glyphicon-star"};
-        if (rate >= 4.25) {document.getElementById("star5_p1").className = "glyphicon glyphicon-star half"};
-        if (rate >= 4.75) {document.getElementById("star5_p1").className = "glyphicon glyphicon-star"};
+    function starShade(rate, product_num) {
+        document.getElementById("star1_p"+product_num).className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star2_p"+product_num).className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star3_p"+product_num).className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star4_p"+product_num).className = "glyphicon glyphicon-star nostar";
+        document.getElementById("star5_p"+product_num).className = "glyphicon glyphicon-star nostar";
+        if (rate >= 0.25) {document.getElementById("star1_p"+product_num).className = "glyphicon glyphicon-star half"};
+        if (rate >= 0.75) {document.getElementById("star1_p"+product_num).className = "glyphicon glyphicon-star"};
+        if (rate >= 1.25) {document.getElementById("star2_p"+product_num).className = "glyphicon glyphicon-star half"};
+        if (rate >= 1.75) {document.getElementById("star2_p"+product_num).className = "glyphicon glyphicon-star"};
+        if (rate >= 2.25) {document.getElementById("star3_p"+product_num).className = "glyphicon glyphicon-star half"};
+        if (rate >= 2.75) {document.getElementById("star3_p"+product_num).className = "glyphicon glyphicon-star"};
+        if (rate >= 3.25) {document.getElementById("star4_p"+product_num).className = "glyphicon glyphicon-star half"};
+        if (rate >= 3.75) {document.getElementById("star4_p"+product_num).className = "glyphicon glyphicon-star"};
+        if (rate >= 4.25) {document.getElementById("star5_p"+product_num).className = "glyphicon glyphicon-star half"};
+        if (rate >= 4.75) {document.getElementById("star5_p"+product_num).className = "glyphicon glyphicon-star"};
     }
 </script>
 <script>
     function snippet(arr, asp_i, prd_i, row_i, pol_i) {
-        if (document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML == arr[asp_i][prd_i][row_i][pol_i][1]) {
+        if (document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML ==
+            htmlEntities(arr[asp_i][prd_i][row_i][pol_i][1])) {
             document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML = arr[asp_i][prd_i][row_i][pol_i][0];
+            document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i+"_snip").innerHTML = "Expand Snippet";
         } else {
             document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML = arr[asp_i][prd_i][row_i][pol_i][1];
+            document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i+"_snip").innerHTML = "Collapse Snippet";
         }
     }
 </script>
 
-<script> aspects1_f = {{aspects_f}} </script>
-<script> aspect1_pct = {{aspects_pct}} </script>
-<script> ratings1 = {{ratings}} </script>
+<script> aspects_f = {{aspects_f|safe}} </script>
+<script> aspects_pct = {{aspects_pct}} </script>
+<script> ratings = {{ratings}} </script>
 <script> review_txt = {{review_txt|safe}} </script>
-<script> js_str = {{js_str|safe}} </script>
+<script> html_str = {{html_str|safe}} </script>
 
 <body>
     <!-- Navigation -->
@@ -145,7 +155,7 @@
             <div class="col-md-37L">
 
                 <div class="thumbnail">
-                    <img class="img-responsive" src="http://placehold.it/800x300" alt="">
+                    <img class="img-responsive" src="https://images-na.ssl-images-amazon.com/images/I/81KHUVOA5bL._SX522_.jpg" alt="" style="max-width: 431px; height: 162px; width: auto">
                     <div class="caption-full">
                         <h4 class="pull-right">$24.99</h4>
                         <h4><a href="#">Product Name</a>
@@ -157,27 +167,27 @@
                         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
                     </div>
                     <div class="progress" style="margin:0px 10px 10px 10px">
-                      <div id="p1_p" class="progress-bar progress-bar-success" role="progressbar" style="width:{{aspects_pct[0][3]}}%">
-                        {{aspects_pct[0][0]|round|int}}%
+                      <div id="p0_p" class="progress-bar progress-bar-success" role="progressbar" style="width:{{aspects_pct[0][0][3]}}%">
+                        {{aspects_pct[0][0][0]|round|int}}%
                       </div>
-                      <div id="p1_m" class="progress-bar progress-bar-warning" role="progressbar" style="width:{{aspects_pct[0][4]}}%">
-                        {{aspects_pct[0][1]|round|int}}%
+                      <div id="p0_m" class="progress-bar progress-bar-warning" role="progressbar" style="width:{{aspects_pct[0][0][4]}}%">
+                        {{aspects_pct[0][0][1]|round|int}}%
                       </div>
-                      <div id="p1_n" class="progress-bar progress-bar-danger" role="progressbar" style="width:{{aspects_pct[0][5]}}%">
-                        {{aspects_pct[0][2]|round|int}}%
+                      <div id="p0_n" class="progress-bar progress-bar-danger" role="progressbar" style="width:{{aspects_pct[0][0][5]}}%">
+                        {{aspects_pct[0][0][2]|round|int}}%
                       </div>
                     </div>
                     <div class="ratings">
                         <p style='margin-bottom:0px'>
-                            <span id="star1_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star2_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star3_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star4_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star5_p1" class="glyphicon glyphicon-star half"></span>
+                            <span id="star1_p0" class="glyphicon glyphicon-star"></span>
+                            <span id="star2_p0" class="glyphicon glyphicon-star"></span>
+                            <span id="star3_p0" class="glyphicon glyphicon-star"></span>
+                            <span id="star4_p0" class="glyphicon glyphicon-star"></span>
+                            <span id="star5_p0" class="glyphicon glyphicon-star half"></span>
                         </p>
-                        <script>starShade({{ratings[0]|round(2)}})</script>
-                        <p id="p1_r" class="pull-right">{{aspects_f[0]}} reviews</p>
-                        <p id="p1_avg">Average: {{ratings[0]|round(2)}} stars</p>
+                        <script>starShade({{ratings[0][0]|round(2)}}, 0)</script>
+                        <p id="p0_r" class="pull-right">{{aspects_f[0][0]}} reviews</p>
+                        <p id="p0_avg">Average: {{ratings[0][0]|round(2)}} stars</p>
                     </div>
                 </div>
 
@@ -198,26 +208,27 @@
                         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
                     </div>
                     <div class="progress" style="margin:0px 10px 10px 10px">
-                      <div class="progress-bar progress-bar-success" role="progressbar" style="width:39%">
-                        Free Space
+                      <div id="p1_p" class="progress-bar progress-bar-success" role="progressbar" style="width:{{aspects_pct[0][1][3]}}%">
+                        {{aspects_pct[0][1][0]|round|int}}%
                       </div>
-                      <div class="progress-bar progress-bar-warning" role="progressbar" style="width:56%">
-                        Warning
+                      <div id="p1_m" class="progress-bar progress-bar-warning" role="progressbar" style="width:{{aspects_pct[0][1][4]}}%">
+                        {{aspects_pct[0][1][1]|round|int}}%
                       </div>
-                      <div class="progress-bar progress-bar-danger" role="progressbar" style="width:5%">
-                        0%
+                      <div id="p1_n" class="progress-bar progress-bar-danger" role="progressbar" style="width:{{aspects_pct[0][1][5]}}%">
+                        {{aspects_pct[0][1][2]|round|int}}%
                       </div>
                     </div>
                     <div class="ratings">
-                        <p class="pull-right">3 reviews</p>
-                        <p>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star"></span>
-                            <span class="glyphicon glyphicon-star-empty"></span>
-                            4.0 stars
+                        <p style='margin-bottom:0px'>
+                            <span id="star1_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star2_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star3_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star4_p1" class="glyphicon glyphicon-star"></span>
+                            <span id="star5_p1" class="glyphicon glyphicon-star half"></span>
                         </p>
+                        <script>starShade({{ratings[1][0]|round(2)}}, 1)</script>
+                        <p id="p1_r" class="pull-right">{{aspects_f[0][1]}} reviews</p>
+                        <p id="p1_avg">Average: {{ratings[1][0]|round(2)}} stars</p>
                     </div>
                 </div>
 
@@ -237,13 +248,13 @@
 
                 <div class="container" style="padding-right:0px; padding-left:0px">
                       <ul class="nav nav-tabs" style="width:75%">
-                        <li id="tab1" class="active" style="width:33%; text-align:center"><a id="tabclick1" data-toggle="tab" href="#home">Positive</a></li>
-                        <li id="tab2" style="width:33%; text-align:center"><a id="tabclick2" data-toggle="tab" href="#menu1">Mixed</a></li>
-                        <li id="tab3" style="width:33%; text-align:center"><a id="tabclick3" data-toggle="tab" href="#menu2">Negative</a></li>
+                        <li id="tab1" class="active" style="width:33.33%; text-align:center"><a id="tabclick1" data-toggle="tab" href="#home" style="background-color:rgba(92, 184, 92, 1); color:#fff">Positive</a></li>
+                        <li id="tab2" style="width:33.34%; text-align:center"><a id="tabclick2" data-toggle="tab" href="#menu1">Mixed</a></li>
+                        <li id="tab3" style="width:33.33%; text-align:center"><a id="tabclick3" data-toggle="tab" href="#menu2">Negative</a></li>
                       </ul>
 
                       <div id="review-html" class="tab-content">
-                        <script> document.getElementById("review-html").innerHTML = js_str[0] </script>
+                        <script> document.getElementById("review-html").innerHTML = html_str[0] </script>
                     </div>
 
                 </div>
@@ -277,6 +288,39 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="../static/js/bootstrap.min.js"></script>
+
+    <script>
+        var tabcolor1 = document.getElementById("tabclick1");
+        var tabcolor2 = document.getElementById("tabclick2");
+        var tabcolor3 = document.getElementById("tabclick3");
+
+        tabcolor1.addEventListener("click", function() {
+            tabcolor1.style["background-color"] = "rgba(92, 184, 92, 1)"
+            tabcolor1.style["color"] = "#fff"
+            tabcolor2.style["background-color"] = ""
+            tabcolor2.style["color"] = "#337ab7"
+            tabcolor3.style["background-color"] = ""
+            tabcolor3.style["color"] = "#337ab7"
+        }, false);
+
+        tabcolor2.addEventListener("click", function() {
+            tabcolor1.style["background-color"] = ""
+            tabcolor1.style["color"] = "#337ab7"
+            tabcolor2.style["background-color"] = "rgba(240, 173, 78, 1)"
+            tabcolor2.style["color"] = "#fff"
+            tabcolor3.style["background-color"] = ""
+            tabcolor3.style["color"] = "#337ab7"
+        }, false);
+
+        tabcolor3.addEventListener("click", function() {
+            tabcolor1.style["background-color"] = ""
+            tabcolor1.style["color"] = "#337ab7"
+            tabcolor2.style["background-color"] = ""
+            tabcolor2.style["color"] = "#337ab7"
+            tabcolor3.style["background-color"] = "rgba(217, 83, 79, 1)"
+            tabcolor3.style["color"] = "#fff"
+        }, false);
+    </script>
 
 </body>
 
