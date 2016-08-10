@@ -115,7 +115,7 @@ class Loader(object):
             # Run Amazon scraper
             # Credit to Andrea Esuli
             # https://github.com/aesuli/amadown2py
-            last_page = os.system('python amazon_crawler.py '
+            last_page = os.system('python scripts/amazon_crawler.py '
                                   '-d com {} -m {} -o reviews'
                                   .format(asin, n_reviews))
         else:
@@ -123,6 +123,8 @@ class Loader(object):
 
         if last_page is None:
             print '\nError!\nCheck if captcha is enforced!'
+        elif last_page == 1:
+            print '1 page scraped. Please retry the scraper with delete=True'
         else:
             self.ratings, self.reviews = extract(asin)
 

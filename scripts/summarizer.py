@@ -164,9 +164,9 @@ def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
     dic2 = polarizer2.aspect_pol_list[aspect] if polarizer2 else None
 
     big_str, js_arr1, js_arr2, cats = "", [], [], ['pos', 'mixed', 'neg']
-    html_panel = ['''<div id="home" class="tab-pane fade in active">''',
-                  '''<div id="menu1" class="tab-pane fade">''',
-                  '''<div id="menu2" class="tab-pane fade">''']
+    html_panel = ['''<div id="home" class="tab-pane in active">''',
+                  '''<div id="menu1" class="tab-pane">''',
+                  '''<div id="menu2" class="tab-pane">''']
 
     for ci, cat in enumerate(cats):
         big_str += html_panel[ci]

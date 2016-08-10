@@ -11,9 +11,9 @@ import requests
 
 app = Flask(__name__)
 
-with open('data/polarizer1.pkl', 'rb') as f:
+with open('data/polarizer3.pkl', 'rb') as f:
     pol1 = cPickle.load(f)
-with open('data/polarizer2.pkl', 'rb') as f:
+with open('data/polarizer4.pkl', 'rb') as f:
     pol2 = cPickle.load(f)
 
 asin1, asin2 = pol1.asin, pol2.asin
@@ -34,13 +34,22 @@ soup2 = BeautifulSoup(html2, 'html.parser')
 try:
     img1 = soup1.find("div", {"id": "imgTagWrapperId"}).find("img")
     img_url1 = json.loads(img1["data-a-dynamic-image"]).keys()[0]
-    title1 = soup1.find("span", {"id": "productTitle"}).text.strip()
-    price1 = soup1.find("span", {"id": "priceblock_ourprice"}).text
 
     img2 = soup2.find("div", {"id": "imgTagWrapperId"}).find("img")
     img_url2 = json.loads(img2["data-a-dynamic-image"]).keys()[0]
+
+    price1 = soup1.find("span", {"id": "priceblock_ourprice"})
+    price2 = soup2.find("span", {"id": "priceblock_ourprice"})
+
+    if not price1:
+        price1 = soup1.find_all("span", {"class": "a-color-price"})[0]
+    if not price2:
+        price1 = soup2.find_all("span", {"class": "a-color-price"})[0]
+
+    price1, price2 = price1.text, price2.text
+
+    title1 = soup1.find("span", {"id": "productTitle"}).text.strip()
     title2 = soup2.find("span", {"id": "productTitle"}).text.strip()
-    price2 = soup2.find("span", {"id": "priceblock_ourprice"}).text
 except:
     img_url1 = 'http://placehold.it/800x300'
     title1 = pol1.name
@@ -69,7 +78,7 @@ ratings1 = [np.mean(pol1.ratings[x]) for x in aspects]
 ratings2 = [np.mean(pol2.ratings[x]) for x in aspects]
 ratings = [ratings1, ratings2]
 
-html_str, js_arr = flask_output_iter(aspects, pol1, pol2)
+html_str, js_arr = flask_output_iter(aspects, pol1, pol2, 105)
 
 
 # Form page to submit
