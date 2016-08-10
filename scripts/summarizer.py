@@ -106,7 +106,7 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
     '''
     txt_list = []
 
-    for ri, (txt, asp_idx, _, _) in enumerate(dic[cat]):
+    for row_i, (txt, asp_idx, rating, review_i, _) in enumerate(dic[cat]):
         reach, frag = 10, txt
 
         while len(frag) > max_txt_len:
@@ -124,21 +124,20 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
             reach -= 1
 
         if frag:
-            curr_str += '<hr>'
+            curr_str += '<hr style="margin-top: 5px; margin-bottom: 5px">'
             curr_str += '''<div class="row">'''
             curr_str += '''<div id="asp{0}_prd{1}_{2}_{3}_div" '''\
-                .format(ai, pi, ci, ri)
-            curr_str += '''class="col-md-12 style="height: 80px";>'''
+                .format(ai, pi, ci, row_i)
+            curr_str += '''class="col-md-12" onclick="snippet(review_txt, '''
+            curr_str += '''{0}, {1}, {2}, {3})">'''.format(ai, pi, ci, row_i)
             curr_str += '''<p id="asp{0}_prd{1}_{2}_{3}">'''\
-                .format(ai, pi, ci, ri)
+                .format(ai, pi, ci, row_i)
             curr_str += '{}'.format(frag.strip())
             curr_str += '''<p style="float:right">'''
             curr_str += '''<a id="asp{0}_prd{1}_{2}_{3}_snip" '''\
-                .format(ai, pi, ci, ri)
-            curr_str += '''style="color:#337ab7" '''
-            curr_str += '''onclick="snippet(review_txt, {0}, {1}, {2}, {3})'''\
-                .format(ai, pi, ci, ri)
-            curr_str += '''">Expand Snippet</a></p>'''
+                .format(ai, pi, ci, row_i)
+            curr_str += '''style="color:#337ab7"'''
+            curr_str += '''"></a></p>'''
             curr_str += '</p>'
             curr_str += '</div>'
             curr_str += '</div>'

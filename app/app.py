@@ -16,48 +16,54 @@ with open('data/polarizer3.pkl', 'rb') as f:
 with open('data/polarizer4.pkl', 'rb') as f:
     pol2 = cPickle.load(f)
 
-asin1, asin2 = pol1.asin, pol2.asin
-url1 = 'https://www.amazon.com/dp/{}/'.format(asin1)
-url2 = 'https://www.amazon.com/dp/{}/'.format(asin2)
+# asin1, asin2 = pol1.asin, pol2.asin
+# url1 = 'https://www.amazon.com/dp/{}/'.format(asin1)
+# url2 = 'https://www.amazon.com/dp/{}/'.format(asin2)
+#
+# header1 = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) ' \
+#           'AppleWebKit/600.3.18 (KHTML, like Gecko) Version/8.0.3' \
+#           'Safari/600.3.18'
+# header2 = 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)'
+#
+# html1 = requests.get(url1, headers={'User-Agent': header1}).content
+# html2 = requests.get(url2, headers={'User-Agent': header2}).content
+#
+# soup1 = BeautifulSoup(html1, 'html.parser')
+# soup2 = BeautifulSoup(html2, 'html.parser')
+#
+# try:
+#     img1 = soup1.find("div", {"id": "imgTagWrapperId"}).find("img")
+#     img_url1 = json.loads(img1["data-a-dynamic-image"]).keys()[0]
+#
+#     img2 = soup2.find("div", {"id": "imgTagWrapperId"}).find("img")
+#     img_url2 = json.loads(img2["data-a-dynamic-image"]).keys()[0]
+#
+#     price1 = soup1.find("span", {"id": "priceblock_ourprice"})
+#     price2 = soup2.find("span", {"id": "priceblock_ourprice"})
+#
+#     if not price1:
+#         price1 = soup1.find_all("span", {"class": "a-color-price"})[0]
+#     if not price2:
+#         price1 = soup2.find_all("span", {"class": "a-color-price"})[0]
+#
+#     price1, price2 = price1.text, price2.text
+#
+#     title1 = soup1.find("span", {"id": "productTitle"}).text.strip()
+#     title2 = soup2.find("span", {"id": "productTitle"}).text.strip()
+# except:
+#     img_url1 = 'http://placehold.it/800x300'
+#     title1 = pol1.name
+#     price1 = 'N/A'
+#
+#     img_url2 = 'http://placehold.it/800x300'
+#     title2 = pol2.name
+#     price2 = 'N/A'
 
-header1 = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) ' \
-          'AppleWebKit/600.3.18 (KHTML, like Gecko) Version/8.0.3' \
-          'Safari/600.3.18'
-header2 = 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)'
-
-html1 = requests.get(url1, headers={'User-Agent': header1}).content
-html2 = requests.get(url2, headers={'User-Agent': header2}).content
-
-soup1 = BeautifulSoup(html1, 'html.parser')
-soup2 = BeautifulSoup(html2, 'html.parser')
-
-try:
-    img1 = soup1.find("div", {"id": "imgTagWrapperId"}).find("img")
-    img_url1 = json.loads(img1["data-a-dynamic-image"]).keys()[0]
-
-    img2 = soup2.find("div", {"id": "imgTagWrapperId"}).find("img")
-    img_url2 = json.loads(img2["data-a-dynamic-image"]).keys()[0]
-
-    price1 = soup1.find("span", {"id": "priceblock_ourprice"})
-    price2 = soup2.find("span", {"id": "priceblock_ourprice"})
-
-    if not price1:
-        price1 = soup1.find_all("span", {"class": "a-color-price"})[0]
-    if not price2:
-        price1 = soup2.find_all("span", {"class": "a-color-price"})[0]
-
-    price1, price2 = price1.text, price2.text
-
-    title1 = soup1.find("span", {"id": "productTitle"}).text.strip()
-    title2 = soup2.find("span", {"id": "productTitle"}).text.strip()
-except:
-    img_url1 = 'http://placehold.it/800x300'
-    title1 = pol1.name
-    price1 = 'N/A'
-
-    img_url2 = 'http://placehold.it/800x300'
-    title2 = pol2.name
-    price2 = 'N/A'
+title1, title2 = pol1.name, pol2.name
+url1, url2 = "", ""
+price1, price2 = "$1", "$1"
+img_url1 =  "https://images-na.ssl-images-amazon.com/images/I/71rHYqOkvNL._SX466_.jpg"
+img_url2 = "https://images-na.ssl-images-amazon.com/images/I/91L30nswRuL._SY450_.jpg"
 
 aspectsf, aspects = common_features(pol1, pol2, printing=False)
 aspectsf, aspects = aspectsf[0:10, 1:].tolist(), aspects[0:10]
@@ -90,6 +96,12 @@ def index():
                            review_txt=js_arr, img_url1=img_url1,
                            img_url2=img_url2, title1=title1, title2=title2,
                            price1=price1, price2=price2, url1=url1, url2=url2)
+
+
+@app.route('/full-review')
+def generate():
+    return render_template('full_review.html')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

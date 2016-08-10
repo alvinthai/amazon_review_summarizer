@@ -33,7 +33,8 @@ class Polarizer(object):
             aspect_pol_list (dict): dictionary with aspect as key and polarity
                                     class (pos, mixed, neg) as subkey. values
                                     are lists containing info on
-                                    (review_txt, aspect_idx, rating, pol_blob)
+                                    (review_txt, aspect_idx, rating,
+                                    review_idx, pol_blob)
             bigramer (Bigramer):    stores Bigramer class
             name (str):             name of product
             ratings (dict):         dictionary with aspect as key and customer
@@ -136,7 +137,7 @@ class Polarizer(object):
                    OR rating == 3 AND pol_blob < 0
             MIXED:    all other cases
 
-        Adds tuple of (review_txt, aspect_idx, rating, pol_blob) to
+        Adds tuple of (review_txt, aspect_idx, rating, review_idx, pol_blob) to
         self.aspect_pol_list object.
         '''
         aspect_idx = self.aspect_dict[aspect][review]['first_aspect_idx']
@@ -170,7 +171,7 @@ class Polarizer(object):
         else:
             result = 'mixed'
 
-        output = (review_txt, aspect_idx, rating, pol_blob)
+        output = (review_txt, aspect_idx, rating, review, pol_blob)
 
         self.aspect_dict[aspect][review]['pol_val'] = pol_blob
         self.aspect_pol_list[aspect][result].append(output)
@@ -185,7 +186,7 @@ class Polarizer(object):
         dic = self.aspect_pol_list[aspect]
 
         for category in dic:
-            dic[category] = sorted(dic[category], key=lambda x: x[3],
+            dic[category] = sorted(dic[category], key=lambda x: x[4],
                                    reverse=category != 'neg')
 
     def _get_pol_class_pct(self, aspect):
@@ -309,7 +310,7 @@ class Polarizer(object):
             big_str += label.ljust(max_txt_len) + '\n'
             big_str += ('-' * 28).ljust(max_txt_len) + '\n'
 
-            for txt, asp_idx, _, _ in dic[category]:
+            for txt, asp_idx, _, _, _ in dic[category]:
                 reach = 10
                 frag = txt
 

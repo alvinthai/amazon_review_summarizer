@@ -27,6 +27,7 @@
 
 </head>
 
+<!-- Javascript Data Functions-->
 <script>
     function htmlEntities(str) {
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -84,20 +85,21 @@
 </script>
 <script>
     function snippet(arr, asp_i, prd_i, row_i, pol_i) {
-        if (document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML ==
-            htmlEntities(arr[asp_i][prd_i][row_i][pol_i][1]))
+        element = "asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i
+        if (document.getElementById(element).innerHTML == htmlEntities(arr[asp_i][prd_i][row_i][pol_i][1]))
             {
-                document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML = arr[asp_i][prd_i][row_i][pol_i][0]+" ";
-                document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i+"_snip").innerHTML = "Expand Snippet";
-                document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i+"_div").style["height"] = "80px";
+                document.getElementById(element).innerHTML = arr[asp_i][prd_i][row_i][pol_i][0]+"\t";
+                document.getElementById(element+"_snip").innerHTML = "";
+                document.getElementById(element+"_div").style["height"] = "60px";
             } else {
-                document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i).innerHTML = arr[asp_i][prd_i][row_i][pol_i][1];
-                document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i+"_snip").innerHTML = "Collapse Snippet";
-                document.getElementById("asp"+asp_i+"_prd"+prd_i+"_"+row_i+"_"+pol_i+"_div").style["height"] = "";
+                document.getElementById(element).innerHTML = arr[asp_i][prd_i][row_i][pol_i][1];
+                document.getElementById(element+"_snip").innerHTML = "Full Review";
+                document.getElementById(element+"_div").style["height"] = "";
             }
     }
 </script>
 
+<!-- Javascript Variables -->
 <script> aspects_f = {{aspects_f|safe}} </script>
 <script> aspects_pct = {{aspects_pct}} </script>
 <script> ratings = {{ratings}} </script>
@@ -275,6 +277,7 @@
     <!-- Bootstrap Core JavaScript -->
     <script src="../static/js/bootstrap.min.js"></script>
 
+    <!-- Javascript/jQuery styling functions -->
     <script>
         var tabcolor1 = document.getElementById("tabclick1");
         var tabcolor2 = document.getElementById("tabclick2");
@@ -310,6 +313,15 @@
     <script>
         $('.caption-full').matchHeight()
         $('.col-md-12').matchHeight(false)
+    </script>
+    <script>
+        $(document).ready(function(){
+            $(".col-md-12").hover(function(){
+                $(this).css("background-color", "#eee");
+                }, function(){
+                $(this).css("background-color", "#f5f5f5");
+            });
+        });
     </script>
 
 </body>
