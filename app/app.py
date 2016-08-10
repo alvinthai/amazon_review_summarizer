@@ -1,9 +1,13 @@
 from __future__ import division
+from bs4 import BeautifulSoup
 from scripts.polarizer import *
 from scripts.summarizer import *
 from flask import Flask, request, render_template
 import cPickle
+import json
 import numpy as np
+import requests
+
 
 app = Flask(__name__)
 
@@ -11,6 +15,40 @@ with open('data/polarizer1.pkl', 'rb') as f:
     pol1 = cPickle.load(f)
 with open('data/polarizer2.pkl', 'rb') as f:
     pol2 = cPickle.load(f)
+
+asin1, asin2 = pol1.asin, pol2.asin
+url1 = 'https://www.amazon.com/dp/{}/'.format(asin1)
+url2 = 'https://www.amazon.com/dp/{}/'.format(asin2)
+
+header1 = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) ' \
+          'AppleWebKit/600.3.18 (KHTML, like Gecko) Version/8.0.3' \
+          'Safari/600.3.18'
+header2 = 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)'
+
+html1 = requests.get(url1, headers={'User-Agent': header1}).content
+html2 = requests.get(url2, headers={'User-Agent': header2}).content
+
+soup1 = BeautifulSoup(html1, 'html.parser')
+soup2 = BeautifulSoup(html2, 'html.parser')
+
+try:
+    img1 = soup1.find("div", {"id": "imgTagWrapperId"}).find("img")
+    img_url1 = json.loads(img1["data-a-dynamic-image"]).keys()[0]
+    title1 = soup1.find("span", {"id": "productTitle"}).text.strip()
+    price1 = soup1.find("span", {"id": "priceblock_ourprice"}).text
+
+    img2 = soup2.find("div", {"id": "imgTagWrapperId"}).find("img")
+    img_url2 = json.loads(img2["data-a-dynamic-image"]).keys()[0]
+    title2 = soup2.find("span", {"id": "productTitle"}).text.strip()
+    price2 = soup2.find("span", {"id": "priceblock_ourprice"}).text
+except:
+    img_url1 = 'http://placehold.it/800x300'
+    title1 = pol1.name
+    price1 = 'N/A'
+
+    img_url2 = 'http://placehold.it/800x300'
+    title2 = pol2.name
+    price2 = 'N/A'
 
 aspectsf, aspects = common_features(pol1, pol2, printing=False)
 aspectsf, aspects = aspectsf[0:10, 1:].tolist(), aspects[0:10]
@@ -33,13 +71,16 @@ ratings = [ratings1, ratings2]
 
 html_str, js_arr = flask_output_iter(aspects, pol1, pol2)
 
+
 # Form page to submit
 @app.route('/')
 def index():
     return render_template('app_results.html', aspects=en_aspects,
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
                            ratings=ratings, html_str=html_str,
-                           review_txt=js_arr)
+                           review_txt=js_arr, img_url1=img_url1,
+                           img_url2=img_url2, title1=title1, title2=title2,
+                           price1=price1, price2=price2, url1=url1, url2=url2)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

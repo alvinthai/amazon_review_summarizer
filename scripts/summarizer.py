@@ -126,7 +126,9 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
         if frag:
             curr_str += '<hr>'
             curr_str += '''<div class="row">'''
-            curr_str += '''<div class="col-md-12">'''
+            curr_str += '''<div id="asp{0}_prd{1}_{2}_{3}_div" '''\
+                .format(ai, pi, ci, ri)
+            curr_str += '''class="col-md-12 style="height: 80px";>'''
             curr_str += '''<p id="asp{0}_prd{1}_{2}_{3}">'''\
                 .format(ai, pi, ci, ri)
             curr_str += '{}'.format(frag.strip())

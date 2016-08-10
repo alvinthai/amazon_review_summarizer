@@ -1940,12 +1940,12 @@ pre code {
       width: 75%;
   }
   .col-md-37L {
-      width: 37%;
-      float: left;
+      width: 38.6%;
+      padding-right: 0.6%;
   }
   .col-md-37R {
-      width: 37%;
-      float: right;
+      width: 38.6%;
+      padding-left: 0.6%;
   }
   .col-md-12 {
     width: 100%;

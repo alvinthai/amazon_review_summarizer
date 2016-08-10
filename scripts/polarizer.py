@@ -19,6 +19,7 @@ class Polarizer(object):
         OUTPUT: None
 
         Attributes:
+            asin (str):             asin identifier for Amazon product
             aspect_dict (dict):     dictionary with aspect as key and review
                                     number as subkey. combines sentences
                                     containing aspects from the same review
@@ -45,6 +46,7 @@ class Polarizer(object):
                                     list appear.
             unigramer (Unigramer):  stores Unigramer class
         '''
+        self.asin = None
         self.aspect_dict = dict()
         self.aspect_pct = dict()
         self.aspect_pol_list = defaultdict(dict)
@@ -246,7 +248,7 @@ class Polarizer(object):
         list of review text within respective polarity class for each aspect in
         aspect_list
         '''
-        self.name = corpus.name
+        self.asin, self.name = corpus.asin, corpus.name
 
         if not aspect_list:
             self._top_aspects()

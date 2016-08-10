@@ -124,10 +124,7 @@ class Loader(object):
         if last_page is None:
             print '\nError!\nCheck if captcha is enforced!'
         else:
-            ratings, reviews = extract(asin)
-
-            self.ratings = ratings
-            self.reviews = reviews
+            self.ratings, self.reviews = extract(asin)
 
         if not self.name:
             f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(asin)

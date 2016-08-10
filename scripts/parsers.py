@@ -48,6 +48,7 @@ class ReviewSents(object):
         OUTPUT: None
 
         Attribures:
+            asin (str): asin identifier for Amazon product
             n_reviews (int): total number of reviews for product
             n_sent (int): total number of sentences in all reviews for product
             name (str): name of product
@@ -55,9 +56,8 @@ class ReviewSents(object):
             reviews (list): list of customer review text for product
             sentences (list): list of SentCustomProperties objects
         '''
-        self.name = product.name
-        self.ratings = product.ratings
-        self.reviews = product.reviews
+        self.asin, self.name = product.asin, product.name
+        self.ratings, self.reviews = product.ratings, product.reviews
         self.n_reviews, self.n_sent, self.sentences = self._parse_sentences()
 
     def _parse_sentences(self):
@@ -119,7 +119,6 @@ class Unigramer(object):
         self.cnt_dict = defaultdict(int)
         self.dep_dict = defaultdict(list)
         self.n_reviews = None
-        # self.pol_dict = defaultdict(list)
         self.rev_dict = defaultdict(set)
         self.sent_dict = defaultdict(list)
         self.unigrams = None
@@ -150,10 +149,6 @@ class Unigramer(object):
                     i = token.i - sent.start_idx
                     self.word_pos_dict[token.lemma_].append(i)
                     self.sent_dict[token.lemma_].append(sent.sent_idx)
-
-            # if token.dep_ == 'amod':
-            #     pol = abs(TextBlob(token.string).sentiment.polarity) > 0
-            #     self.pol_dict[token.head.lemma_].append(pol)
 
         return " ".join(wordset)
 
@@ -323,7 +318,7 @@ class Bigramer(object):
                     yield element
 
     def candidate_bigrams(self, corpus, unigramer, min_pct=0.005,
-                          pmi_pct=1/2500, max_avg_dist=2):
+                          pmi_pct=0.0004, max_avg_dist=2):
         '''
         INPUT: ReviewSents, Unigramer, float, float, float
         OUTPUT: set(str)
@@ -362,7 +357,6 @@ class Bigramer(object):
                 if key != new_key:
                     self._reverse_key(key, new_key)
 
-        self.bigrams = bigrams
-        self.bigram_words = bigram_words
+        self.bigrams, self.bigram_words = bigrams, bigram_words
 
         return bigrams
