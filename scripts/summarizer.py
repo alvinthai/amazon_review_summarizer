@@ -106,7 +106,7 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
     '''
     txt_list = []
 
-    for row_i, (txt, asp_idx, rating, review_i, _) in enumerate(dic[cat]):
+    for row_i, (txt, asp_idx, _, rev_i, _) in enumerate(dic[cat]):
         reach, frag = 10, txt
 
         while len(frag) > max_txt_len:
@@ -136,13 +136,13 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
             curr_str += '''<p style="float:right">'''
             curr_str += '''<a id="asp{0}_prd{1}_{2}_{3}_snip" '''\
                 .format(ai, pi, ci, row_i)
-            curr_str += '''style="color:#337ab7"'''
-            curr_str += '''"></a></p>'''
-            curr_str += '</p>'
+            curr_str += '''style="color:#337ab7" '''
+            curr_str += '''href="full_review?product={}&review_idx={}"'''\
+                .format(pi, rev_i)
+            curr_str += '''></a></p></p>'''
             curr_str += '</div>'
             curr_str += '</div>'
-            txt_list.append([frag.strip() + " ", txt])
-
+            txt_list.append([frag.strip() + "\t", txt])
     return curr_str, txt_list
 
 

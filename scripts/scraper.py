@@ -34,11 +34,10 @@ def extract(asin):
     Args:
         asin: an Amazon asin str identifier (output from get_id function)
 
-    Extracts the star rating and review text from directory of amazon html
-    files
+    Extracts the star rating, review text, author name, and review headline
+    from directory of amazon html files
     '''
-    ratings = []
-    reviews = []
+    ratings, reviews, authors, headlines = [], [], [], []
 
     path = os.getcwd() + '/reviews/com/{}/'.format(asin)
     pages = [file_ for file_ in os.listdir(path) if file_[-5:] == '.html']
@@ -53,13 +52,22 @@ def extract(asin):
                 continue
 
             for tag in tags:
+                rev_class = "a-size-base review-text"
+                aut_class = "a-size-base a-link-normal author"
+                head_class = "a-size-base a-link-normal review-title " \
+                    "a-color-base a-text-bold"
+
                 rating = int(tag.find('i').text[0])
-                review = tag.findAll("span", {"class": "a-size-base " +
-                                              "review-text"})[0].text
+                review = tag.findAll("span", {"class": rev_class})[0].text
+                author = tag.findAll("a", {"class": aut_class})[0].text
+                headline = tag.findAll("a", {"class": head_class})[0].text
+
                 ratings.append(rating)
                 reviews.append(review)
+                authors.append(author)
+                headlines.append(headline)
 
-    return ratings, reviews
+    return ratings, reviews, authors, headlines
 
 
 class Loader(object):
@@ -72,11 +80,19 @@ class Loader(object):
         OUTPUT: None
 
         Attributes:
-            name (str): custom name for Amazon product
+            authors (list): list of strings or review authors
             asin (str): asin identifier for Amazon product
+            headlines (list): list of strings of review headlines
+            name (str): custom name for Amazon product
+            ratings (list): list of ints of review ratings
+            reviews (list): list of strings of review text
         '''
-        self.name = name
+        self.authors = None
         self.asin = None
+        self.headlines = None
+        self.name = name
+        self.ratings = None
+        self.reviews = None
 
     def scrape(self, n_reviews=300, delete=False):
         '''
@@ -126,7 +142,8 @@ class Loader(object):
         elif last_page == 1:
             print '1 page scraped. Please retry the scraper with delete=True'
         else:
-            self.ratings, self.reviews = extract(asin)
+            self.ratings, self.reviews, self.authors, self.headlines = \
+                extract(asin)
 
         if not self.name:
             f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(asin)

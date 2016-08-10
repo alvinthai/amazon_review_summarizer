@@ -61,6 +61,14 @@
             if ( t3 == "active" ) { document.getElementById("tabclick1").click(); document.getElementById("tabclick3").click() };
 
             $('.col-md-12').matchHeight(false)
+
+            $(document).ready(function(){
+                $(".col-md-12").hover(function(){
+                    $(this).css("background-color", "#eee");
+                    }, function(){
+                    $(this).css("background-color", "#f5f5f5");
+                });
+            });
         }
     }
 </script>
