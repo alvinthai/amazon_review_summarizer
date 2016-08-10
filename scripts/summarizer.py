@@ -88,12 +88,14 @@ def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
     print big_str
 
 
-def _html_coder(ci, cat, dic, max_txt_len, curr_str):
+def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
     '''
-    INPUT: int, str, dict, int, str
+    INPUT: int, int, int, str, dict, int, str
     OUTPUT: str, list
 
     Args:
+        ai: aspect index
+        pi: product index
         ci: polarity class index (0: 'pos', 1: 'mixed', 2: 'neg')
         cat: label for polarity class
         dic: dictionary to extract review text from with cat keys
@@ -126,15 +128,13 @@ def _html_coder(ci, cat, dic, max_txt_len, curr_str):
             curr_str += '''<div class="row">'''
             curr_str += '''<div class="col-md-12">'''
             curr_str += '''<p id="asp{0}_prd{1}_{2}_{3}">'''\
-                .format(0, 0, ci, ri)
-            curr_str += '''<script> document.getElementById(
-                "asp{0}_prd{1}_{2}_{3}").innerHTML=
-                review_txt[{0}][{1}][{2}][{3}][0]</script>'''\
-                .format(0, 0, ci, ri)
-            curr_str += '''<p style="float:right">
-                <a style="color:#337ab7"
-                onclick="snippet(review_txt, {0}, {1}, {2}, {3})">
-                Expand Snippet</a></p>'''.format(0, 0, ci, ri)
+                .format(ai, pi, ci, ri)
+            curr_str += '''{}'''.format(frag)
+            curr_str += '''<p style="float:right">'''
+            curr_str += '''<a style="color:#337ab7" '''
+            curr_str += '''onclick="snippet(review_txt, {0}, {1}, {2}, {3})'''\
+                .format(ai, pi, ci, ri)
+            curr_str += '''">Expand Snippet</a></p>'''
             curr_str += '''</p>'''
             curr_str += '''</div>'''
             curr_str += '''</div>'''
@@ -143,12 +143,13 @@ def _html_coder(ci, cat, dic, max_txt_len, curr_str):
     return curr_str, txt_list
 
 
-def flask_output(aspect, polarizer1, polarizer2=None, max_txt_len=80):
+def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
     '''
-    INPUT: str, Polarizer, Polarizer, int
+    INPUT: int, str, Polarizer, Polarizer, int
     OUTPUT: str, list
 
     Args:
+        ai: aspect index
         aspect: aspect to print result for
         max_txt_len: max length for each printed line
 
@@ -163,13 +164,39 @@ def flask_output(aspect, polarizer1, polarizer2=None, max_txt_len=80):
 
     for ci, cat in enumerate(cats):
         big_str += html_panel[ci]
-        big_str += '''<div class="col-md-75"
-            style="width:37.5%; padding-right:0.6%">'''
+        big_str += '''<div class="col-md-75" '''
+        big_str += '''style="width:37.5%; padding-right:0.6%">'''
         big_str += '''<div class="well">'''
 
-        big_str, txt_list = _html_coder(ci, cat, dic1, max_txt_len, big_str)
+        big_str, txt_list = _html_coder(ai, 0, ci, cat, dic1, max_txt_len,
+                                        big_str)
 
         big_str += '''</div></div></div>'''
         js_arr.append(txt_list)
 
     return big_str, js_arr
+
+
+def flask_output_iter(aspect_list, polarizer1, polarizer2=None, max_txt_len=80):
+    '''
+    INPUT: list, Polarizer, Polarizer, int
+    OUTPUT: list, list
+
+    Args:
+        aspect_list: list of aspects to print result for
+        max_txt_len: max length for each printed line
+
+    Repeats flask_output for a list of array. Outputs a list of html strings
+    and a five-dimensional array of review text for input into flask/jinfa
+    '''
+    html_strs, js_arrs = [], []
+
+    for ai, aspect in enumerate(aspect_list):
+        big_str, js_arr = flask_output(ai, aspect, polarizer1, polarizer2,
+                                       max_txt_len)
+        js_arr = [js_arr]
+
+        html_strs.append(big_str)
+        js_arrs.append(js_arr)
+
+    return html_strs, js_arrs

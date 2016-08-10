@@ -21,8 +21,7 @@ aspects1_pct_vis = np.apply_along_axis(lambda x: 5 + x / sum(x) * 85, 1,
 aspects1_pct = np.hstack([aspects1_pct, aspects1_pct_vis]).tolist()
 ratings1 = [np.mean(pol1.ratings[x]) for x in aspects1]
 
-test_str, test_arr = flask_output(aspects1[0], pol1)
-test_arr = [[test_arr]]
+test_str, test_arr = flask_output_iter(aspects1, pol1)
 
 # Form page to submit
 @app.route('/')
