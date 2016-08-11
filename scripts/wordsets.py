@@ -16,7 +16,7 @@ noun_tag = set(['NN', 'NNP', 'NNS'])
 nonaspects = set(['product', 'price', 'device', 'review', 'item',
                   'amazon', 'everything', 'company', 'brand',
                   'buy', 'purchase', 'cost', 'year', 'month', 'day',
-                  'problem', 'issue', 'give'])
+                  'week', 'hour', 'problem', 'issue', 'give'])
 
 # stopword adjectives to filter out
 nonadj = set(['other', 'first', 'second', 'third', 'much'])

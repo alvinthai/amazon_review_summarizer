@@ -74,7 +74,7 @@ class Loader(object):
     '''
     Class for scraping a review site on Amazon
     '''
-    def __init__(self, name=None):
+    def __init__(self, url, name=None):
         '''
         INPUT: str
         OUTPUT: None
@@ -86,6 +86,7 @@ class Loader(object):
             name (str): custom name for Amazon product
             ratings (list): list of ints of review ratings
             reviews (list): list of strings of review text
+            url (str): url of the amazon link to scrape
         '''
         self.authors = None
         self.asin = None
@@ -93,6 +94,7 @@ class Loader(object):
         self.name = name
         self.ratings = None
         self.reviews = None
+        self.url = url
 
     def scrape(self, n_reviews=300, delete=False):
         '''
@@ -106,7 +108,7 @@ class Loader(object):
         Scrapes n most helpful amazon reviews and extracts reviews
         If already scraped, extracts reviews
         '''
-        url = raw_input('url of amazon product: ')
+        url = self.url
         asin = get_id(url)
         self.asin = asin
 
