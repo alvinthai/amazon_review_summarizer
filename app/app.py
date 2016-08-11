@@ -8,6 +8,7 @@ import requests
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def compare_home():
     return render_template('compare_home.html')
@@ -22,10 +23,19 @@ def summarize_home():
 def compare_results():
     url1 = str(request.form['url1'].encode('utf-8'))
     url2 = str(request.form['url2'].encode('utf-8'))
+
     if not url1 or not url2:
         raise RuntimeError("No url entered")
+
     output_dic = collect(url1, url2)
-    globals().update(output_dic)
+
+    if output_dic == "No matches":
+        return render_template('no_matches.html')
+    elif output_dic == "Scraping failed":
+        return render_template('failed.html')
+    else:
+        globals().update(output_dic)
+
     return render_template('compare_results.html', aspects=en_aspects,
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
                            ratings=ratings, html_str=html_str,
@@ -36,10 +46,17 @@ def compare_results():
 @app.route('/summarize_results', methods=['POST'])
 def summarize_results():
     url1 = str(request.form['url1'].encode('utf-8'))
+
     if not url1:
         raise RuntimeError("No url entered")
+
     output_dic = collect(url1)
-    globals().update(output_dic)
+
+    if output_dic == "Scraping failed":
+        return render_template('failed.html')
+    else:
+        globals().update(output_dic)
+
     return render_template('summarize_results.html', aspects=en_aspects,
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
                            ratings=ratings, html_str=html_str,
@@ -62,4 +79,4 @@ def full_review():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True, processes=-1)
+    app.run(host='0.0.0.0', port=8000, debug=True)

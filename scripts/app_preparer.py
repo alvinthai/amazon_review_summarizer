@@ -26,6 +26,9 @@ def displayed_aspects(polarizer1, polarizer2=None, n=10):
         aspects = polarizer1.top_asps[0][0:10]
         aspectsf = polarizer1.top_asps[1][0:10]
 
+    if not aspectsf:
+        return None, None, None
+
     en_aspects = [[x[0], x[1]] for x in enumerate(aspects)]
 
     return aspects, aspectsf, en_aspects
@@ -101,14 +104,20 @@ def collect(url1, url2=None):
     Runs functions to pass data for product1 and product2 (if applicable)
     into flask application. Returns a dictionary of lists.
     '''
-    polarizer1, data1 = summarize(url1)
+    try:
+        polarizer1, data1 = summarize(url1)
 
-    if url2:
-        polarizer2, data2 = summarize(url2)
-    else:
-        polarizer2 = None
+        if url2:
+            polarizer2, data2 = summarize(url2)
+        else:
+            polarizer2 = None
+    except RuntimeError:
+        return "Scraping failed"
 
     aspects, aspectsf, en_aspects = displayed_aspects(polarizer1, polarizer2)
+    if not aspectsf:
+        return "No matches"
+
     aspects_pct_all1, mean_ratings1 = model_data(polarizer1, aspects)
     img_url1, price1, title1, url1 = product_info(polarizer1)
 
