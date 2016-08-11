@@ -115,7 +115,7 @@ def collect(url1, url2=None):
     if not url2:
         aspects_pct, ratings = [aspects_pct_all1], [mean_ratings1]
         img_urls, prices, titles, urls = [img_url1], [price1], [title1], [url1]
-        data1 = map(list, data1)
+        data1 = [[lst] for lst in data1]
         authors_lst, headlines_lst, ratings_lst, reviews_lst = data1
     else:
         aspects_pct_all2, mean_ratings2 = model_data(polarizer2, aspects)

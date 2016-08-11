@@ -41,18 +41,16 @@
             {% endfor %}
             document.getElementById("cat"+n).className = "list-group-item active";
 
-            for (i = 0; i <= 1; i++) {
-                document.getElementById("p"+i+"_p").innerHTML = Math.round(aspects_pct[i][n][0])+"%";
-                document.getElementById("p"+i+"_p").style["width"] = aspects_pct[i][n][3]+"%";
-                document.getElementById("p"+i+"_m").innerHTML = Math.round(aspects_pct[i][n][1])+"%";
-                document.getElementById("p"+i+"_m").style["width"] = aspects_pct[i][n][4]+"%";
-                document.getElementById("p"+i+"_n").innerHTML = Math.round(aspects_pct[i][n][2])+"%";
-                document.getElementById("p"+i+"_n").style["width"] = aspects_pct[i][n][5]+"%";
-                document.getElementById("p"+i+"_r").innerHTML = aspects_f[n][i]+" Reviews";
+            document.getElementById("p0_p").innerHTML = Math.round(aspects_pct[0][n][0])+"%";
+            document.getElementById("p0_p").style["width"] = aspects_pct[0][n][3]+"%";
+            document.getElementById("p0_m").innerHTML = Math.round(aspects_pct[0][n][1])+"%";
+            document.getElementById("p0_m").style["width"] = aspects_pct[0][n][4]+"%";
+            document.getElementById("p0_n").innerHTML = Math.round(aspects_pct[0][n][2])+"%";
+            document.getElementById("p0_n").style["width"] = aspects_pct[0][n][5]+"%";
+            document.getElementById("p0_r").innerHTML = aspects_f[n]+" Reviews";
 
-                document.getElementById("p"+i+"_avg").innerHTML = "Average: "+Math.round(ratings[i][n]*100)/100+" stars";
-                starShade(ratings[i][n], i);
-            };
+            document.getElementById("p0_avg").innerHTML = "Average: "+Math.round(ratings[0][n]*100)/100+" stars";
+            starShade(ratings[0][n], 0);
 
             t2 = document.getElementById("tab2").className;
             t3 = document.getElementById("tab3").className;
@@ -98,7 +96,7 @@
             {
                 document.getElementById(element).innerHTML = arr[asp_i][prd_i][row_i][pol_i][0]+"\t";
                 document.getElementById(element+"_snip").innerHTML = "";
-                document.getElementById(element+"_div").style["height"] = "60px";
+                document.getElementById(element+"_div").style["height"] = "40px";
             } else {
                 document.getElementById(element).innerHTML = arr[asp_i][prd_i][row_i][pol_i][1];
                 document.getElementById(element+"_snip").innerHTML = "Full Review";
@@ -145,6 +143,7 @@
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
+        <!-- /.container -->
     </nav>
     <!-- Page Content -->
     <div id="aspect_sidebar" class="col-md-3" style="width: 20%">
@@ -162,7 +161,7 @@
 
     <div class="container">
 
-            <div class="col-md-37L">
+            <div class="col-md-37L" style="width: 77.6%; padding-left:0.1%">
 
                 <div class="thumbnail">
                     <img class="img-responsive" src="{{img_urls[0]}}" alt="" style="max-width: 431px; height: 162px; width: auto">
@@ -191,45 +190,8 @@
                             <span id="star5_p0" class="glyphicon glyphicon-star half"></span>
                         </p>
                         <script>starShade({{ratings[0][0]|round(2)}}, 0)</script>
-                        <p id="p0_r" class="pull-right">{{aspects_f[0][0]}} reviews</p>
+                        <p id="p0_r" class="pull-right">{{aspects_f[0]}} reviews</p>
                         <p id="p0_avg">Average: {{ratings[0][0]|round(2)}} stars</p>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="col-md-37R">
-
-                <div class="thumbnail">
-                    <img class="img-responsive" src="{{img_urls[1]}}" alt=""
-                     style="max-width: 431px; height: 162px; width: auto">
-                    <div class="caption-full">
-                        <h4 class="pull-right">{{prices[1]}}</h4>
-                        <h4><a href="{{urls[1]}}">{{titles[1]}}</a>
-                        </h4>
-                    </div>
-                    <div class="progress" style="margin:0px 10px 10px 10px">
-                      <div id="p1_p" class="progress-bar progress-bar-success" role="progressbar" style="width:{{aspects_pct[0][1][3]}}%">
-                        {{aspects_pct[0][1][0]|round|int}}%
-                      </div>
-                      <div id="p1_m" class="progress-bar progress-bar-warning" role="progressbar" style="width:{{aspects_pct[0][1][4]}}%">
-                        {{aspects_pct[0][1][1]|round|int}}%
-                      </div>
-                      <div id="p1_n" class="progress-bar progress-bar-danger" role="progressbar" style="width:{{aspects_pct[0][1][5]}}%">
-                        {{aspects_pct[0][1][2]|round|int}}%
-                      </div>
-                    </div>
-                    <div class="ratings">
-                        <p style='margin-bottom:0px'>
-                            <span id="star1_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star2_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star3_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star4_p1" class="glyphicon glyphicon-star"></span>
-                            <span id="star5_p1" class="glyphicon glyphicon-star half"></span>
-                        </p>
-                        <script>starShade({{ratings[1][0]|round(2)}}, 1)</script>
-                        <p id="p1_r" class="pull-right">{{aspects_f[0][1]}} reviews</p>
-                        <p id="p1_avg">Average: {{ratings[1][0]|round(2)}} stars</p>
                     </div>
                 </div>
 
@@ -251,6 +213,7 @@
                 </div>
 
             </div>
+
 
     </div>
 

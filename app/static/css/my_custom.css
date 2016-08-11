@@ -29,3 +29,16 @@
     height: 100%;
     left: 0%;
 }
+div#content {
+    display: none;
+    }
+
+div#loading {
+	position: fixed;
+	left: 0px;
+	top: 0px;
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+	background: url('https://kimia.mobi/bundles/kimia/img/spinner-orange.gif?1.0.21') 50% 50% no-repeat
+    }

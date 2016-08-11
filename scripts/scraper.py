@@ -72,7 +72,8 @@ def extract(asin):
 
 class Loader(object):
     '''
-    Class for scraping a review site on Amazon
+    Class for scraping a review site on Amazon. Stores html files locally
+    and scrapes off the stored files.
     '''
     def __init__(self, url, name=None):
         '''
@@ -96,6 +97,27 @@ class Loader(object):
         self.reviews = None
         self.url = url
 
+    def _delete(self, asin):
+        '''
+        INPUT: str
+        OUTPUT: None
+
+        Deletes folder with preexisting review html data for asin
+        '''
+        path = os.getcwd() + '/reviews/com/{}/'.format(asin)
+        pages = [file_ for file_ in os.listdir(path)]
+
+        try:
+            for page in pages:
+                os.remove(path + page)
+        except:
+            print 'No files to delete!'
+
+        try:
+            os.rmdir(path)
+        except:
+            print 'No folder to delete!'
+
     def scrape(self, n_reviews=300, delete=False, retries=0):
         '''
         INPUT: int, bool
@@ -115,27 +137,14 @@ class Loader(object):
         folder = os.getcwd() + '/reviews/com/' + asin
 
         if delete:
-            path = os.getcwd() + '/reviews/com/{}/'.format(asin)
-            pages = [file_ for file_ in os.listdir(path)]
-
-            try:
-                for page in pages:
-                    os.remove(path + page)
-            except:
-                print 'No files to delete!'
-
-            try:
-                os.rmdir(path)
-            except:
-                print 'No folder to delete!'
+            self._delete(asin)
 
         if not os.path.isdir(folder):
             # Run Amazon scraper
             # Credit to Andrea Esuli
             # https://github.com/aesuli/amadown2py
             os.system('python scripts/amazon_crawler.py '
-                                  '-d com {} -m {} -o reviews'
-                                  .format(asin, n_reviews))
+                      '-d com {} -m {} -o reviews'.format(asin, n_reviews))
             last_page = len(os.listdir(folder))
         else:
             last_page = len(os.listdir(folder))
@@ -149,6 +158,7 @@ class Loader(object):
                                              retries=retries)
 
         if last_page == 1 and retries == 5:
+            self.delete(asin)
             raise RuntimeError("Scraping Failed!")
 
         self.ratings, self.reviews, self.authors, self.headlines = \
