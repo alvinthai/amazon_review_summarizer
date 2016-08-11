@@ -96,7 +96,7 @@ class Loader(object):
         self.reviews = None
         self.url = url
 
-    def scrape(self, n_reviews=300, delete=False):
+    def scrape(self, n_reviews=300, delete=False, retries=0):
         '''
         INPUT: int, bool
         OUTPUT: None
@@ -133,19 +133,26 @@ class Loader(object):
             # Run Amazon scraper
             # Credit to Andrea Esuli
             # https://github.com/aesuli/amadown2py
-            last_page = os.system('python scripts/amazon_crawler.py '
+            os.system('python scripts/amazon_crawler.py '
                                   '-d com {} -m {} -o reviews'
                                   .format(asin, n_reviews))
+            last_page = len(os.listdir(folder))
         else:
             last_page = len(os.listdir(folder))
 
-        if last_page is None:
-            print '\nError!\nCheck if captcha is enforced!'
-        elif last_page == 1:
-            print '1 page scraped. Please retry the scraper with delete=True'
-        else:
-            self.ratings, self.reviews, self.authors, self.headlines = \
-                extract(asin)
+        if retries > 0:
+            return retries, last_page
+
+        while last_page == 1 and retries < 5:
+            retries += 1
+            retries, last_page = self.scrape(n_reviews, delete=True,
+                                             retries=retries)
+
+        if last_page == 1 and retries == 5:
+            raise RuntimeError("Scraping Failed!")
+
+        self.ratings, self.reviews, self.authors, self.headlines = \
+            extract(asin)
 
         if not self.name:
             f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(asin)

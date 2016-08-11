@@ -31,8 +31,17 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def index():
-    return render_template('app_results.html', aspects=en_aspects,
+def home():
+    return render_template('compare_home.html')
+
+
+@app.route('/compare_results', methods=['POST'])
+def compare_results():
+    url1 = str(request.form['url1'].encode('utf-8'))
+    url2 = str(request.form['url2'].encode('utf-8'))
+    output_dic = collect(url1, url2)
+    globals().update(output_dic)
+    return render_template('compare_results.html', aspects=en_aspects,
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
                            ratings=ratings, html_str=html_str,
                            review_txt=js_arr, img_urls=img_urls,
@@ -54,8 +63,4 @@ def full_review():
 
 
 if __name__ == '__main__':
-    url1 = "https://www.amazon.com/Hasbro-98936-Hungry-Hippos/dp/B008FD8ETS/ref=sr_1_1?s=toys-and-games&ie=UTF8&qid=1470819854&sr=1-1&keywords=hungry+hungry+hippos"
-    url2 = "https://www.amazon.com/Hasbro-A5640-Connect-4-Game/dp/B00D8STBHY/ref=sr_1_8?s=toys-and-games&ie=UTF8&qid=1470819785&sr=1-8&keywords=hungry+hungry+hippos"
-    output_dic = collect(url1, url2)
-    locals().update(output_dic)
     app.run(host='0.0.0.0', port=8080, debug=True)

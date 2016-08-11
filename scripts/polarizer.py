@@ -206,6 +206,9 @@ class Polarizer(object):
         neg = len(dic['neg'])
         total = pos + mixed + neg
 
+        if not total:
+            total = 1000000
+
         pos = round(pos / total, 3) * 100
         mixed = round(mixed / total, 3) * 100
         neg = round(neg / total, 3) * 100

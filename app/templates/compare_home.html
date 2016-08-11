@@ -27,22 +27,6 @@
 
 </head>
 
-<!-- Javascript Data Functions-->
-<script>
-    function starShade(rate) {
-        document.getElementById("star1").className = "glyphicon glyphicon-star-empty";
-        document.getElementById("star2").className = "glyphicon glyphicon-star-empty";
-        document.getElementById("star3").className = "glyphicon glyphicon-star-empty";
-        document.getElementById("star4").className = "glyphicon glyphicon-star-empty";
-        document.getElementById("star5").className = "glyphicon glyphicon-star-empty";
-        if (rate >= 1) {document.getElementById("star1").className = "glyphicon glyphicon-star"};
-        if (rate >= 2) {document.getElementById("star2").className = "glyphicon glyphicon-star"};
-        if (rate >= 3) {document.getElementById("star3").className = "glyphicon glyphicon-star"};
-        if (rate >= 4) {document.getElementById("star4").className = "glyphicon glyphicon-star"};
-        if (rate >= 5) {document.getElementById("star5").className = "glyphicon glyphicon-star"};
-    }
-</script>
-
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -79,23 +63,23 @@
     <!-- Page Content -->
     <div class="container">
 
-        <div class="row">
-            <div class="col-md-12">
-                <span id="star1" class="glyphicon glyphicon-star"></span>
-                <span id="star2" class="glyphicon glyphicon-star"></span>
-                <span id="star3" class="glyphicon glyphicon-star"></span>
-                <span id="star4" class="glyphicon glyphicon-star"></span>
-                <span id="star5" class="glyphicon glyphicon-star-empty"></span>
-                {{ author }}
-                <p></p>
-                <p><b>{{ headline }}</b></p>
-                <p>{{ review }}</p>
-            </div>
-        </div><hr style="margin-top: 10px">
+        <img class="img-responsive" src="static/img/ars_slim.png" alt="">
+
+        <form role="form" action="/compare_results" method="POST" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form">
+
+            <input class="form-control" style="margin-top: 25px" name="url1" placeholder="Enter in the url of the first amazon product to compare..." required>
+            <input class="form-control" name="url2" placeholder="Enter in the url of the second amazon product to compare..." required>
+
+            <span class="input-group-btn">
+                <button type="submit" style="margin-top: 10px; border-radius: 12px" name="compare" id="mc-embedded-subscribe" class="btn btn-default">Compare Products!</button>
+            </span>
+
+        </form>
 
         <!-- Footer -->
         <footer style="margin-top: 10px">
             <div class="row">
+                <hr style="margin-top: 10px">
                 <div class="col-lg-12">
                     <p>Copyright © 2016</p>
                 </div>
@@ -110,7 +94,15 @@
 
     <!-- Bootstrap Core JavaScript -->
     <script src="../static/js/bootstrap.min.js"></script>
-    <script>starShade({{ rating }})</script>
+    <script>
+        $(document).ready(function(){
+            $("#mc-embedded-subscribe").hover(function(){
+                $(this).css("background-color", "rgba(255, 160, 47, 0.75)");
+                }, function(){
+                $(this).css("background-color", "#fff");
+            });
+        });
+    </script>
 
 </body>
 

@@ -82,7 +82,7 @@ def product_info(polarizer, head=0):
         if not price:
             price = soup.find_all("span", {"class": "a-color-price"})[0].text
         else:
-            price = price[0].text
+            price = price.text
 
         title = soup.find("span", {"id": "productTitle"}).text.strip()
     except:
