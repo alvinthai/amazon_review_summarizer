@@ -192,13 +192,13 @@ class Unigramer(object):
 
         return unigrams
 
-    def update_review_count(self, bigramer):
+    def update_review_count(self, bigramer, trigramer=None):
         '''
-        IMPUT: Bigramer
+        IMPUT: Bigramer, Trigramer
         OUTPUT: none
 
         Updates Unigramer rev_dict so that reviews aren't double counted for
-        unigram words appearing in bigrams.
+        unigram words appearing in bigrams and trigrams.
         '''
         update_queue = self.unigrams & bigramer.bigram_words
 
@@ -207,45 +207,57 @@ class Unigramer(object):
                 if unigram in bigram:
                     self.rev_dict[unigram] -= bigramer.rev_dict[bigram]
 
+            if not trigramer:
+                continue
+
+            for trigram in trigramer.trigrams:
+                if unigram in trigram:
+                    self.rev_dict[unigram] -= trigramer.rev_dict[trigram]
+
 
 class Bigramer(object):
     '''
     Class of functions for extracting Bigrams
     '''
-    def __init__(self):
+    def __init__(self, unigramer):
         '''
+        INPUT: unigramer
+        OUTPUT: None
+
         Attribures:
-            avg_dist (dict):      dictionary with word as key and count of how
-                                  frequently such word appears in all review
-                                  for products as value
-            bigrams (set):        set of bigrams obtained with
-                                  candidate_bigrams function
-            bigram_words (set):   set of words used in bigrams
-            distances (dict):     dictionary with bigram as key and list of
-                                  absolute word spacing difference betweeen
-                                  words of bigram as values
-            ordering (dict):      dictionary with bigram as key and list of
-                                  which word in bigram appears first in
-                                  sentence as value
-            pmi (dict):           dictionary with bigram as key and float
-                                  describing Pointwise Mutual Information
-                                  between words in bigram as value
-            rev_dict (dict):      dictionary with word as key and set of review
-                                  indexes containg word as value
-            sent_dict (dict):     dictionary with word as key and list of
-                                  sentence indexes containg word as value
-            word_pos_dict (dict): dictionary with word as key and list of
-                                  token index of word within spacy sentence as
-                                  value
+            avg_dist (dict):       dictionary with word as key and count of how
+                                   frequently such word appears in all review
+                                   for products as value
+            bigrams (set):         set of bigrams obtained with
+                                   candidate_bigrams function
+            bigram_words (set):    set of words used in bigrams
+            distances (dict):      dictionary with bigram as key and list of
+                                   absolute word spacing difference betweeen
+                                   words of bigram as values
+            ordering (dict):       dictionary with bigram as key and list of
+                                   which word in bigram appears first in
+                                   sentence as value
+            pmi (dict):            dictionary with bigram as key and float
+                                   describing Pointwise Mutual Information
+                                   between words in bigram as value
+            rev_dict (dict):       dictionary with word as key and set of
+                                   review indexes containg word as value
+            sent_dict (dict):      dictionary with word as key and list of
+                                   sentence indexes containg word as value
+            unigramer (Unigramer): Unigramer object for product
+            word_pos_dict (dict):  dictionary with word as key and list of
+                                   token index of word within spacy sentence as
+                                   value
         '''
         self.avg_dist = defaultdict(float)
-        self.bigrams = None
-        self.bigram_words = None
+        self.bigrams = set()
+        self.bigram_words = set()
         self.distances = defaultdict(list)
         self.ordering = defaultdict(list)
         self.pmi = defaultdict(float)
         self.rev_dict = defaultdict(set)
         self.sent_dict = defaultdict(list)
+        self.unigramer = unigramer
         self.word_pos_dict = defaultdict(list)
 
     def _reverse_key(self, key, new_key):
@@ -261,7 +273,7 @@ class Bigramer(object):
         '''
         self.avg_dist[new_key] = self.avg_dist.pop(key)
         self.distances[new_key] = self.distances.pop(key)
-        self.ordering[new_key] = self.ordering.pop(key)
+        self.ordering[new_key] = self.ordering.pop(key)[::-1]
         self.pmi[new_key] = self.pmi.pop(key)
         self.rev_dict[new_key] = self.rev_dict.pop(key)
         self.sent_dict[new_key] = self.sent_dict.pop(key)
@@ -317,10 +329,10 @@ class Bigramer(object):
                 for element in output:
                     yield element
 
-    def candidate_bigrams(self, corpus, unigramer, min_pct=0.005,
+    def candidate_bigrams(self, corpus, min_pct=0.005,
                           pmi_pct=0.0004, max_avg_dist=2):
         '''
-        INPUT: ReviewSents, Unigramer, float, float, float
+        INPUT: ReviewSents, float, float, float
         OUTPUT: set(str)
 
         Args:
@@ -331,9 +343,8 @@ class Bigramer(object):
 
         Outputs set of bigram strings with words in bigram seperated by space
         '''
-        bigrams = set()
-        bigram_words = set()
-        cnt_dict = unigramer.cnt_dict
+        bigrams, bigram_words = self.bigrams, self.bigram_words
+        cnt_dict = self.unigramer.cnt_dict
 
         feats = Counter(self._get_compactness_feat(corpus))
 
@@ -357,6 +368,115 @@ class Bigramer(object):
                 if key != new_key:
                     self._reverse_key(key, new_key)
 
-        self.bigrams, self.bigram_words = bigrams, bigram_words
-
         return bigrams
+
+    def pop_bigrams(self, trigramer):
+        '''
+        IMPUT: Trigramer
+        OUTPUT: none
+
+        Remove bigrams if the words appear in a trigram
+        '''
+        bigrams = sorted(list(self.bigrams))
+        split_bigrams = [bigram.split(" ") for bigram in bigrams]
+
+        for trigram in trigramer.trigrams:
+            trigram = trigram.split(" ")
+            for bigram, split in zip(bigrams, split_bigrams):
+                if split[0] in trigram and split[1] in trigram:
+                    self.bigrams -= set([bigram])
+
+
+class Trigramer(object):
+    '''
+    Class of functions for extracting trigrams
+    '''
+    def __init__(self, bigramer):
+        '''
+        INPUT: Bigramer
+        OUTPUT: None
+
+        Attribures:
+            bigramer (Bigramer):  Bigramer object for product
+            rev_dict (dict):      dictionary with word as key and set of review
+                                  indexes containg word as value
+            sent_dict (dict):     dictionary with word as key and list of
+                                  sentence indexes containg word as value
+            trigrams (set):       set of trigrams obtained with
+                                  candidate_trigrams function
+            word_pos_dict (dict): dictionary with word as key and list of
+                                  token index of word within spacy sentence as
+                                  value
+        '''
+        self.bigramer = bigramer
+        self.rev_dict = defaultdict(set)
+        self.sent_dict = defaultdict(list)
+        self.trigrams = set()
+        self.word_pos_dict = defaultdict(list)
+
+    def _find_idx(self, corpus, bigram1, bigram2, trigram):
+        '''
+        INPUT: ReviewSents, str, str, str
+        OUTPUT: None
+
+        Args:
+            bigram1: first two words of trigram
+            bigram2: last two words of trigram
+            trigram: three word aspect
+
+        Checks the rev_dict, sent_dict, and word_pos_dict of bigrams in trigram
+        to build the same dictionaries for the trigram.
+        '''
+        bgrm_rdict = self.bigramer.rev_dict
+        bgrm_sdict = self.bigramer.sent_dict
+        tgrm_sdict = self.sent_dict
+        bgrm_wdict = self.bigramer.word_pos_dict
+        tgrm_wdict = self.word_pos_dict
+
+        match_idx = np.in1d(bgrm_sdict[bigram1], bgrm_sdict[bigram2])
+        match_reviews = set()
+
+        tgrm_sdict[trigram] = np.array(bgrm_sdict[bigram1])[match_idx].tolist()
+        tgrm_wdict[trigram] = np.array(bgrm_wdict[bigram1])[match_idx].tolist()
+
+        for si in tgrm_sdict[trigram]:
+            match_reviews.add(corpus.sentences[si].review_idx)
+
+        self.rev_dict[trigram] = match_reviews
+
+    def candidate_trigrams(self, corpus, review_pct=0.40):
+        '''
+        INPUT: ReviewSents, float
+        OUTPUT: set(str)
+
+        Args:
+            review_pct: percentage of reviews two bigrams linked in a trigram
+                        must appear together in (relative to the bigram
+                        appearing in fewer reviews)
+
+        Outputs set of trigram strings with words in trigram seperated by space
+        '''
+        bigrams, trigrams = self.bigramer.bigrams, self.trigrams
+        bgrm_rdict = self.bigramer.rev_dict
+
+        split_bigrams = [bigram.split(" ") for bigram in bigrams]
+
+        for bigram1, split1 in zip(bigrams, split_bigrams):
+            for bigram2, split2 in zip(bigrams, split_bigrams):
+                # check if the bigrams connect to form a trigram
+                if split1[1] != split2[0]:
+                    continue
+
+                bg1_cnt = len(bgrm_rdict[bigram1])
+                bg2_cnt = len(bgrm_rdict[bigram2])
+                bg12_min_cnt = min(bg1_cnt, bg2_cnt)
+                bg_common_cnt = len(bgrm_rdict[bigram1] & bgrm_rdict[bigram2])
+
+                if bg_common_cnt / bg12_min_cnt < review_pct:
+                    continue
+
+                trigram = " ".join([split1[0], split1[1], split2[1]])
+                trigrams.add(trigram)
+                self._find_idx(corpus, bigram1, bigram2, trigram)
+
+        return trigrams

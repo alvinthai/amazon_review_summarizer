@@ -29,11 +29,16 @@ def summarize(url, n_reviews=300, delete=False):
     unigramer = Unigramer()
     unigramer.candidate_unigrams(corpus)
 
-    bigramer = Bigramer()
-    bigramer.candidate_bigrams(corpus, unigramer)
-    unigramer.update_review_count(bigramer)
+    bigramer = Bigramer(unigramer)
+    bigramer.candidate_bigrams(corpus)
 
-    polarizer = Polarizer(unigramer, bigramer)
+    trigramer = Trigramer(bigramer)
+    trigramer.candidate_trigrams(corpus)
+
+    bigramer.pop_bigrams(trigramer)
+    unigramer.update_review_count(bigramer, trigramer)
+
+    polarizer = Polarizer(unigramer, bigramer, trigramer)
     polarizer.polarize_aspects(corpus)
 
     return polarizer, data

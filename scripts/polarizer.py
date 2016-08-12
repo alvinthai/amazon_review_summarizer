@@ -13,7 +13,7 @@ class Polarizer(object):
     Class of functions for determing polarity of reviews
     '''
 
-    def __init__(self, unigramer, bigramer):
+    def __init__(self, unigramer, bigramer, trigramer):
         '''
         INPUT: Unigramer, Bigramer
         OUTPUT: None
@@ -45,6 +45,7 @@ class Polarizer(object):
                                     aspects. Second list is the review count
                                     frequency of how often aspects in first
                                     list appear.
+            trigramer (Trigramer):  stores Trigramer class
             unigramer (Unigramer):  stores Unigramer class
         '''
         self.asin = None
@@ -55,6 +56,7 @@ class Polarizer(object):
         self.name = None
         self.ratings = defaultdict(list)
         self.top_asps = None
+        self.trigramer = trigramer
         self.unigramer = unigramer
 
     def _aspect_review_dict(self, corpus, aspect):
@@ -75,11 +77,16 @@ class Polarizer(object):
             rev_idx = self.unigramer.rev_dict[aspect]
             sent_idx = self.unigramer.sent_dict[aspect]
             word_pos_idx = self.unigramer.word_pos_dict[aspect]
-        else:
+        elif len(aspect.split(" ")) == 2:
             # aspect is a bigram
             rev_idx = self.bigramer.rev_dict[aspect]
             sent_idx = self.bigramer.sent_dict[aspect]
             word_pos_idx = self.bigramer.word_pos_dict[aspect]
+        else:
+            # aspect is a trigram
+            rev_idx = self.trigramer.rev_dict[aspect]
+            sent_idx = self.trigramer.sent_dict[aspect]
+            word_pos_idx = self.trigramer.word_pos_dict[aspect]
 
         review_dict = defaultdict(dict)
 
@@ -223,16 +230,20 @@ class Polarizer(object):
         Adds a list of the top aspects and a list of how frequently they appear
         to the Polarizer object
         '''
-        unigramer, bigramer = self.unigramer, self.bigramer
+        ug, bg, tg = self.unigramer, self.bigramer, self.trigramer
 
-        asps = list(unigramer.unigrams)
-        bigrams = list(bigramer.bigrams)
+        asps = list(ug.unigrams)
+        bigrams = list(bg.bigrams)
+        trigrams = list(tg.trigrams)
 
-        aspects_rev_f = [len(unigramer.rev_dict[unigram]) for unigram in asps]
-        bigrams_rev_f = [len(bigramer.rev_dict[bigram]) for bigram in bigrams]
+        aspects_rev_f = [len(ug.rev_dict[unigram]) for unigram in asps]
+        bigrams_rev_f = [len(bg.rev_dict[bigram]) for bigram in bigrams]
+        trigrams_rev_f = [len(tg.rev_dict[trigram]) for trigram in trigrams]
 
         asps.extend(bigrams)
+        asps.extend(trigrams)
         aspects_rev_f.extend(bigrams_rev_f)
+        aspects_rev_f.extend(trigrams_rev_f)
 
         top_asps = sorted(zip(asps, aspects_rev_f), key=lambda x: x[1],
                           reverse=True)

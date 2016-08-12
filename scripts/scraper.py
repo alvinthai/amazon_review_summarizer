@@ -59,8 +59,15 @@ def extract(asin):
 
                 rating = int(tag.find('i').text[0])
                 review = tag.findAll("span", {"class": rev_class})[0].text
-                author = tag.findAll("a", {"class": aut_class})[0].text
-                headline = tag.findAll("a", {"class": head_class})[0].text
+
+                try:
+                    author = tag.findAll("a", {"class": aut_class})[0].text
+                except:
+                    author = "Anonymous"
+                try:
+                    headline = tag.findAll("a", {"class": head_class})[0].text
+                except:
+                    headline = "No headline"
 
                 ratings.append(rating)
                 reviews.append(review)
@@ -136,6 +143,15 @@ class Loader(object):
 
         folder = os.getcwd() + '/reviews/com/' + asin
 
+        if 'amazon_crawler.py' in os.listdir(os.getcwd()):
+            cmd = 'python amazon_crawler.py'
+        elif 'amazon_crawler.py' in os.listdir(os.getcwd() + '/scripts'):
+            cmd = 'python scripts/amazon_crawler.py'
+        else:
+            raise RuntimeError("Put amazon_crawler.py in same folder as "
+                               "current working directory or inside scripts"
+                               "folder.")
+
         if delete:
             self._delete(asin)
 
@@ -143,8 +159,8 @@ class Loader(object):
             # Run Amazon scraper
             # Credit to Andrea Esuli
             # https://github.com/aesuli/amadown2py
-            os.system('python scripts/amazon_crawler.py '
-                      '-d com {} -m {} -o reviews'.format(asin, n_reviews))
+            os.system('{} -d com {} -m {} -o reviews'.format(cmd, asin,
+                                                             n_reviews))
             last_page = len(os.listdir(folder))
         else:
             last_page = len(os.listdir(folder))

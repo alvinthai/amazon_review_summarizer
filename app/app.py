@@ -1,10 +1,14 @@
 from flask import Flask, request, render_template
-from scripts.app_preparer import collect
 import cPickle
+import datetime
 import json
 import numpy as np
 import requests
 
+try:
+    from scripts.app_preparer import collect
+except:
+    from app_preparer import collect
 
 app = Flask(__name__)
 
@@ -21,6 +25,9 @@ def summarize_home():
 
 @app.route('/compare_results', methods=['POST'])
 def compare_results():
+    print "post request started at " + \
+        datetime.datetime.now().time().isoformat()
+
     url1 = str(request.form['url1'].encode('utf-8'))
     url2 = str(request.form['url2'].encode('utf-8'))
 
@@ -35,6 +42,8 @@ def compare_results():
         return render_template('failed.html')
     else:
         globals().update(output_dic)
+        print "post request completed at " + \
+            datetime.datetime.now().time().isoformat()
 
     return render_template('compare_results.html', aspects=en_aspects,
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
@@ -45,6 +54,9 @@ def compare_results():
 
 @app.route('/summarize_results', methods=['POST'])
 def summarize_results():
+    print "post request started at " + \
+        datetime.datetime.now().time().isoformat()
+
     url1 = str(request.form['url1'].encode('utf-8'))
 
     if not url1:
@@ -56,6 +68,8 @@ def summarize_results():
         return render_template('failed.html')
     else:
         globals().update(output_dic)
+        print "post request completed at " + \
+            datetime.datetime.now().time().isoformat()
 
     return render_template('summarize_results.html', aspects=en_aspects,
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
@@ -79,4 +93,4 @@ def full_review():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=8000)
