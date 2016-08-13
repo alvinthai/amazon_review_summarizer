@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup
+import math
 import os
 import re
-import requests
+import time
 
 
 def get_id(url):
@@ -109,6 +110,9 @@ class Loader(object):
         INPUT: str
         OUTPUT: None
 
+        Args:
+            asin: asin identifier for Amazon product
+
         Deletes folder with preexisting review html data for asin
         '''
         path = os.getcwd() + '/reviews/com/{}/'.format(asin)
@@ -124,6 +128,18 @@ class Loader(object):
             os.rmdir(path)
         except:
             print 'No folder to delete!'
+
+    def _get_html_count(self, folder):
+        '''
+        INPUT: str
+        OUTPUT: int
+
+        Args:
+            folder: path of folder to check count of html files
+
+        Returns a count of the number of html files inside specified folder
+        '''
+        return len([htm for htm in os.listdir(folder) if htm[-4:] == 'html'])
 
     def scrape(self, n_reviews=300, delete=False, retries=0):
         '''
@@ -161,9 +177,36 @@ class Loader(object):
             # https://github.com/aesuli/amadown2py
             os.system('{} -d com {} -m {} -o reviews'.format(cmd, asin,
                                                              n_reviews))
-            last_page = len(os.listdir(folder))
+            last_page = self._get_html_count(folder)
         else:
-            last_page = len(os.listdir(folder))
+            # Check to see if number of html files is sufficient
+            new_files = True
+            rev_cnt_tag = "a-size-medium totalReviewCount"
+
+            with open('{}/{}_1.html'.format(folder, asin), 'r') as f:
+                soup = BeautifulSoup(f, 'html.parser')
+
+            tag = soup.find("span", {"class": rev_cnt_tag})
+            reviews = int(tag.text.replace(',', ''))
+            expected_pages = min(int(math.ceil(n_reviews / 10.)),
+                                 int(math.ceil(reviews / 10.)))
+
+            last_page = self._get_html_count(folder)
+
+            while last_page != expected_pages and new_files:
+                # Wait for background scraping to complete
+                time.sleep(10)
+                old_count = last_page
+                last_page = self._get_html_count(folder)
+
+                if old_count == last_page:
+                    # No background scraping
+                    new_files = False
+
+            if last_page != expected_pages and not new_files:
+                # Not enough files, delete files and force rescrape in the
+                # next while loop
+                last_page = 1
 
         if retries > 0:
             return retries, last_page

@@ -40,18 +40,31 @@ def download_page(url, referer, maxretries, timeout, pause):
     htmlpage = None
     while tries < maxretries and htmlpage is None:
         try:
-            user_agent = ['Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
-              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36',
-              'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
-              'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
-              'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36',
-              'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.3319.102 Safari/537.36',
-              'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36',
-              'Mozilla/5.0 (Macintosh; PPC Mac OS X x.y; rv:10.0) Gecko/20100101 Firefox/10.0',
-              'Mozilla/5.0 (Windows NT x.y; rv:10.0) Gecko/20100101 Firefox/10.0',
-              'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.517 Safari/537.36',
-              'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/4E423F',
-              'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36']
+            user_agent = \
+                ['Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, '
+                 'like Gecko) Chrome/41.0.2228.0 Safari/537.36',
+                 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)AppleWebKit/'
+                 '537.36 (KHTML, like Gecko) Chrome/41.0.2227.1 Safari/537.36',
+                 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, '
+                 'like Gecko) Chrome/41.0.2227.0 Safari/537.36',
+                 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 '
+                 '(KHTML, like Gecko) Chrome/41.0.2227.0 Safari/537.36',
+                 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 '
+                 '(KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36',
+                 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, '
+                 'like Gecko) Chrome/35.0.3319.102 Safari/537.36',
+                 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 '
+                 '(KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36',
+                 'Mozilla/5.0 (Macintosh; PPC Mac OS X x.y; rv:10.0) '
+                 'Gecko/20100101 Firefox/10.0',
+                 'Mozilla/5.0 (Windows NT x.y; rv:10.0) Gecko/20100101'
+                 'Firefox/10.0',
+                 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, '
+                 'like Gecko) Chrome/33.0.1750.517 Safari/537.36',
+                 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, '
+                 'like Gecko) Chrome/34.0.1847.137 Safari/4E423F',
+                 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 '
+                 '(KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36']
 
             choice = np.random.choice(user_agent)
             # print choice
@@ -122,7 +135,7 @@ def main():
         if not os.path.exists(basepath + os.sep + id_):
             os.makedirs(basepath + os.sep + id_)
 
-        pause = args.pause + np.random.random()*4
+        pause = args.pause + np.random.random() * 4
 
         urlPart1 = "http://www.amazon." + args.domain + "/product-reviews/"
         urlPart2 = "/?ie=UTF8&showViewpoints=0&pageNumber="
