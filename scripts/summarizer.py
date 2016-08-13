@@ -88,7 +88,7 @@ def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
     print big_str
 
 
-def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
+def _html_coder(ai, pi, ci, cat, dic, session, max_txt_len, curr_str):
     '''
     INPUT: int, int, int, str, dict, int, str
     OUTPUT: str, list
@@ -137,8 +137,8 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
             curr_str += '''<a id="asp{0}_prd{1}_{2}_{3}_snip" '''\
                 .format(ai, pi, ci, row_i)
             curr_str += '''style="color:#337ab7" '''
-            curr_str += '''href="full_review?product={}&review_idx={}"'''\
-                .format(pi, rev_i)
+            curr_str += '''href="full_review?session={}&'''.format(session)
+            curr_str += '''product={}&review_idx={}"'''.format(pi, rev_i)
             curr_str += '''></a></p></p>'''
             curr_str += '</div>'
             curr_str += '</div>'
@@ -146,7 +146,8 @@ def _html_coder(ai, pi, ci, cat, dic, max_txt_len, curr_str):
     return curr_str, txt_list
 
 
-def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
+def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
+                 max_txt_len=80):
     '''
     INPUT: int, str, Polarizer, Polarizer, int
     OUTPUT: str, list
@@ -174,8 +175,8 @@ def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
             if polarizer2 else '''style="width:75%">'''
         big_str += '''<div class="well">'''
 
-        big_str, txt_list = _html_coder(ai, 0, ci, cat, dic1, max_txt_len,
-                                        big_str)
+        big_str, txt_list = _html_coder(ai, 0, ci, cat, dic1, session,
+                                        max_txt_len, big_str)
 
         big_str += '</div></div>' if polarizer2 else '</div></div></div>'
         js_arr1.append(txt_list)
@@ -185,8 +186,8 @@ def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
             big_str += '''style="width:37.5%; padding-left:0.6%">'''
             big_str += '''<div class="well">'''
 
-            big_str, txt_list = _html_coder(ai, 1, ci, cat, dic2, max_txt_len,
-                                            big_str)
+            big_str, txt_list = _html_coder(ai, 1, ci, cat, dic2, session,
+                                            max_txt_len, big_str)
 
             big_str += '</div></div></div>'
             js_arr2.append(txt_list)
@@ -196,7 +197,7 @@ def flask_output(ai, aspect, polarizer1, polarizer2=None, max_txt_len=80):
     return big_str, js_arr
 
 
-def flask_output_iter(aspect_list, polarizer1, polarizer2=None,
+def flask_output_iter(aspect_list, session, polarizer1, polarizer2=None,
                       max_txt_len=80):
     '''
     INPUT: list, Polarizer, Polarizer, int
@@ -212,8 +213,8 @@ def flask_output_iter(aspect_list, polarizer1, polarizer2=None,
     html_strs, js_arrs = [], []
 
     for ai, aspect in enumerate(aspect_list):
-        big_str, js_arr = flask_output(ai, aspect, polarizer1, polarizer2,
-                                       max_txt_len)
+        big_str, js_arr = flask_output(ai, aspect, session, polarizer1,
+                                       polarizer2, max_txt_len)
 
         html_strs.append(big_str)
         js_arrs.append(js_arr)

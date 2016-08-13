@@ -126,6 +126,7 @@ def collect(url1, url2=None):
         img_urls, prices, titles, urls = [img_url1], [price1], [title1], [url1]
         data1 = [[lst] for lst in data1]
         authors_lst, headlines_lst, ratings_lst, reviews_lst = data1
+        session = polarizer1.asin
     else:
         aspects_pct_all2, mean_ratings2 = model_data(polarizer2, aspects)
         img_url2, price2, title2, url2 = product_info(polarizer2, 1)
@@ -141,22 +142,11 @@ def collect(url1, url2=None):
         headlines_lst = [data1[1], data2[1]]
         ratings_lst = [data1[2], data2[2]]
         reviews_lst = [data1[3], data2[3]]
+        session = polarizer1.asin + '_' + polarizer2.asin
 
-    html_str, js_arr = flask_output_iter(aspects, polarizer1, polarizer2, 105)
+    html_str, js_arr = flask_output_iter(aspects, session, polarizer1,
+                                         polarizer2, 105)
 
-    output_dic = {'aspectsf': aspectsf,
-                  'aspects_pct': aspects_pct,
-                  'en_aspects': en_aspects,
-                  'ratings': ratings,
-                  'html_str': html_str,
-                  'js_arr': js_arr,
-                  'img_urls': img_urls,
-                  'prices': prices,
-                  'titles': titles,
-                  'urls': urls,
-                  'authors_lst': authors_lst,
-                  'headlines_lst': headlines_lst,
-                  'ratings_lst': ratings_lst,
-                  'reviews_lst': reviews_lst}
-
-    return output_dic
+    return [aspectsf, aspects_pct, en_aspects, ratings, html_str, js_arr,
+            img_urls, prices, titles, urls, authors_lst, headlines_lst,
+            ratings_lst, reviews_lst, session]
