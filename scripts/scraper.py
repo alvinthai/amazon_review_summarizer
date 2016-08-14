@@ -150,14 +150,20 @@ class Loader(object):
             n_reviews: number of reviews to scrape
             delete: option to force delete folder containing cached reviews
 
-        Scrapes n most helpful amazon reviews and extracts reviews
-        If already scraped, extracts reviews
+        Scrapes n most helpful amazon reviews and extracts reviews.
+        If already scraped, extracts reviews.
         '''
-        url = self.url
-        asin = get_id(url)
-        self.asin = asin
+        try:
+            url = self.url
+            asin = get_id(url)
+            self.asin = asin
+        except:
+            raise RuntimeError("Cannot find asin from the url.")
 
         folder = os.getcwd() + '/reviews/com/' + asin
+
+        if delete:
+            self._delete(asin)
 
         if 'amazon_crawler.py' in os.listdir(os.getcwd()):
             cmd = 'python amazon_crawler.py'
@@ -168,16 +174,16 @@ class Loader(object):
                                "current working directory or inside scripts"
                                "folder.")
 
-        if delete:
-            self._delete(asin)
-
         if not os.path.isdir(folder):
             # Run Amazon scraper
             # Credit to Andrea Esuli
             # https://github.com/aesuli/amadown2py
-            os.system('{} -d com {} -m {} -o reviews'.format(cmd, asin,
-                                                             n_reviews))
-            last_page = self._get_html_count(folder)
+            try:
+                os.system('{} -d com {} -m {} -o reviews'
+                          .format(cmd, asin, n_reviews))
+                last_page = self._get_html_count(folder)
+            except NameError:
+                raise RuntimeError("Invalid ASIN")
         else:
             # Check to see if number of html files is sufficient
             new_files = True
@@ -220,11 +226,16 @@ class Loader(object):
             self.delete(asin)
             raise RuntimeError("Scraping Failed!")
 
-        self.ratings, self.reviews, self.authors, self.headlines = \
-            extract(asin)
-
         if not self.name:
             f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(asin)
+
             with open(f, 'r') as html:
                 soup = BeautifulSoup(html, 'html.parser')
+
+            try:
                 self.name = soup.select('.a-link-normal')[0].text
+            except:
+                raise RuntimeError("Invalid HTML code")
+
+        self.ratings, self.reviews, self.authors, self.headlines = \
+            extract(asin)
