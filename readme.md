@@ -19,6 +19,7 @@ Amazon Review Summarizer also includes a tool for side-by-side product compariso
 ## Methodology
 
 The main pipeline for Amazon Review Summarizer is composed of 6 steps:
+
 1. Scrape the 300 most helpful Amazon reviews for the input product url(s).
 2. Perform dependency parsing and part of speech tagging on every sentence in every scraped review.
 3. Collect all nouns used in the reviews as candidate unigram aspects. Filter out unigrams that are unlikely to be aspects.
