@@ -6,7 +6,7 @@ from scraper import *
 def load(url, n_reviews=300, delete=False):
     '''
     INPUT: str, int, bool
-    OUTPUT: Loader, list
+    OUTPUT: Loader
 
     Args:
         url: url of amazon product
@@ -14,17 +14,15 @@ def load(url, n_reviews=300, delete=False):
         delete: whether to delete existing reviews that have been
             scraped (if old reviews exist, no scraping is attempted)
 
-    Scrapes an amazon url and returns the scraped object and a list of lists
-    of the product's review data.
+    Scrapes an amazon url and returns the scraped product.
     '''
-    doc = Loader(url)
-    doc.scrape(300)
-    data = [doc.authors, doc.headlines, doc.ratings, doc.reviews]
+    product = Loader(url)
+    product.scrape(300)
 
-    return doc, data
+    return product
 
 
-def parse(doc):
+def parse(product):
     '''
     INPUT: Loader
     OUTPUT: ReviewSents
@@ -35,7 +33,8 @@ def parse(doc):
     Uses spacy to tokenize sentences in review and returns custom class of
     review data for later processing
     '''
-    return ReviewSents(doc)
+    product.extract(product.asin)
+    return ReviewSents(product)
 
 
 def summarize(corpus):

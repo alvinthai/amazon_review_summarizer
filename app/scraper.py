@@ -5,87 +5,14 @@ import re
 import time
 
 
-def get_id(url):
-    '''
-    INPUT: str
-    OUTPUT: str
-
-    Args:
-        url: an Amazon url string
-
-    Gets asin identifer for amazon product from a url
-    '''
-
-    # url format: https://www.amazon.com/.../.../id/...
-    regex = re.compile(r'(?<=/)[^/]*')
-    asin = regex.findall(url)[-2]
-
-    if len(asin) != 10:
-        # url format https://www.amazon.com/.../id
-        asin = regex.findall(url)[-1][:10]
-
-    return asin
-
-
-def extract(asin):
-    '''
-    INPUT: str
-    OUTPUT: list(int), list(str)
-
-    Args:
-        asin: an Amazon asin str identifier (output from get_id function)
-
-    Extracts the star rating, review text, author name, and review headline
-    from directory of amazon html files
-    '''
-    ratings, reviews, authors, headlines = [], [], [], []
-
-    path = os.getcwd() + '/reviews/com/{}/'.format(asin)
-    pages = [file_ for file_ in os.listdir(path) if file_[-5:] == '.html']
-
-    for page in pages:
-        with open(path + page, 'r') as f:
-            soup = BeautifulSoup(f, 'html.parser')
-            tags = soup.findAll("div", {"class": "a-section review"})
-
-            if not tags:
-                print '{} is an invalid page format for scraping'.format(page)
-                continue
-
-            for tag in tags:
-                rev_class = "a-size-base review-text"
-                aut_class = "a-size-base a-link-normal author"
-                head_class = "a-size-base a-link-normal review-title " \
-                    "a-color-base a-text-bold"
-
-                rating = int(tag.find('i').text[0])
-                review = tag.findAll("span", {"class": rev_class})[0].text
-
-                try:
-                    author = tag.findAll("a", {"class": aut_class})[0].text
-                except:
-                    author = "Anonymous"
-                try:
-                    headline = tag.findAll("a", {"class": head_class})[0].text
-                except:
-                    headline = "No headline"
-
-                ratings.append(rating)
-                reviews.append(review)
-                authors.append(author)
-                headlines.append(headline)
-
-    return ratings, reviews, authors, headlines
-
-
 class Loader(object):
     '''
     Class for scraping a review site on Amazon. Stores html files locally
     and scrapes off the stored files.
     '''
-    def __init__(self, url, name=None):
+    def __init__(self, url=None, name=None):
         '''
-        INPUT: str
+        INPUT: str, str
         OUTPUT: None
 
         Attributes:
@@ -104,6 +31,27 @@ class Loader(object):
         self.ratings = None
         self.reviews = None
         self.url = url
+
+    def _get_id(self, url):
+        '''
+        INPUT: str
+        OUTPUT: str
+
+        Args:
+            url: an Amazon url string
+
+        Gets asin identifer for amazon product from a url
+        '''
+
+        # url format: https://www.amazon.com/.../.../id/...
+        regex = re.compile(r'(?<=/)[^/]*')
+        asin = regex.findall(url)[-2]
+
+        if len(asin) != 10:
+            # url format https://www.amazon.com/.../id
+            asin = regex.findall(url)[-1][:10]
+
+        return asin
 
     def _delete(self, asin):
         '''
@@ -155,7 +103,7 @@ class Loader(object):
         '''
         try:
             url = self.url
-            asin = get_id(url)
+            asin = self._get_id(url)
             self.asin = asin
         except:
             raise RuntimeError("Cannot find asin from the url.")
@@ -226,6 +174,19 @@ class Loader(object):
             self._delete(asin)
             raise RuntimeError("Scraping Failed!")
 
+    def extract(self, asin):
+        '''
+        INPUT: str
+        OUTPUT: self
+
+        Args:
+            asin: an Amazon asin str identifier (output from get_id function)
+
+        Extracts the star rating, review text, author name, and review headline
+        from directory of amazon html files
+        '''
+        self.asin = asin
+
         if not self.name:
             f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(asin)
 
@@ -237,5 +198,45 @@ class Loader(object):
             except:
                 raise RuntimeError("Invalid HTML code")
 
+        ratings, reviews, authors, headlines = [], [], [], []
+
+        path = os.getcwd() + '/reviews/com/{}/'.format(asin)
+        pages = [file_ for file_ in os.listdir(path) if file_[-5:] == '.html']
+
+        for page in pages:
+            with open(path + page, 'r') as f:
+                soup = BeautifulSoup(f, 'html.parser')
+                tags = soup.findAll("div", {"class": "a-section review"})
+
+                if not tags:
+                    print '{} is an invalid page format for scraping' \
+                        .format(page)
+                    continue
+
+                for tag in tags:
+                    r_class = "a-size-base review-text"
+                    a_class = "a-size-base a-link-normal author"
+                    h_class = "a-size-base a-link-normal review-title " \
+                        "a-color-base a-text-bold"
+
+                    rating = int(tag.find('i').text[0])
+                    review = tag.findAll("span", {"class": r_class})[0].text
+
+                    try:
+                        author = tag.findAll("a", {"class": a_class})[0].text
+                    except:
+                        author = "Anonymous"
+                    try:
+                        headline = tag.findAll("a", {"class": h_class})[0].text
+                    except:
+                        headline = "No headline"
+
+                    ratings.append(rating)
+                    reviews.append(review)
+                    authors.append(author)
+                    headlines.append(headline)
+
         self.ratings, self.reviews, self.authors, self.headlines = \
-            extract(asin)
+            ratings, reviews, authors, headlines
+
+        return self
