@@ -135,7 +135,7 @@ def main():
         if not os.path.exists(basepath + os.sep + id_):
             os.makedirs(basepath + os.sep + id_)
 
-        pause = args.pause + np.random.random() * 4
+        pause = args.pause + np.random.random() * 3
 
         urlPart1 = "http://www.amazon." + args.domain + "/product-reviews/"
         urlPart2 = "/?ie=UTF8&showViewpoints=0&pageNumber="

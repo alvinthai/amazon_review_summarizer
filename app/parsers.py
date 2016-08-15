@@ -103,8 +103,8 @@ class Unigramer(object):
                                   frequently such word appears in all review
                                   for products as value
             dep_dict (dict):      dictionary with word as key and list of every
-                                  dependency type that corresponding with the
-                                  word element as value
+                                  dependency type that corresponds with the
+                                  word token as value
             n_reviews (int):      total number of reviews for product
             rev_dict (dict):      dictionary with word as key and set of review
                                   indexes containg word as value
@@ -354,7 +354,7 @@ class Bigramer(object):
                            self.ordering[key][0])
             new_key = " ".join(order)
 
-            pmi = round(val / (cnt_dict[order[0]] * cnt_dict[order[1]]), 4)
+            pmi = val / (cnt_dict[order[0]] * cnt_dict[order[1]])
             avg_dist = round(np.mean(self.distances[key]), 2)
 
             if pmi >= pmi_pct and (avg_dist < max_avg_dist and
