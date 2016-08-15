@@ -47,6 +47,9 @@ def compare_home():
 
 @app.route('/compare_scraped', methods=['POST'])
 def compare_scraped():
+    print "post request started at " + \
+        datetime.datetime.now().time().isoformat()
+
     url1 = str(request.form['url1'].encode('utf-8'))
     url2 = str(request.form['url2'].encode('utf-8'))
 
@@ -62,6 +65,9 @@ def compare_scraped():
     asin2 = next(items[1].collect())[1].asin
 
     session['products'] = [asin1, asin2]
+
+    print "post request completed at " + \
+        datetime.datetime.now().time().isoformat()
 
     return render_template('compare_scraped.html')
 
@@ -103,8 +109,6 @@ def compare_results():
                            titles=titles, prices=prices, urls=urls,
                            session=session_url)
 
-    return render_template('compare_results.html')
-
 
 @app.route('/summarize_home')
 def summarize_home():
@@ -113,6 +117,9 @@ def summarize_home():
 
 @app.route('/summarize_scraped', methods=['POST'])
 def summarize_scraped():
+    print "post request started at " + \
+        datetime.datetime.now().time().isoformat()
+
     url = str(request.form['url1'].encode('utf-8'))
 
     if not url:
@@ -126,6 +133,9 @@ def summarize_scraped():
     asin = next(item.collect())[1].asin
 
     session['products'] = asin
+
+    print "post request completed at " + \
+        datetime.datetime.now().time().isoformat()
 
     return render_template('summarize_scraped.html')
 
