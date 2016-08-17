@@ -1,3 +1,9 @@
+'''
+This script contains code that runs the full scraping, parsing, aspect mining,
+and sentiment analysis pipeline from the scraper.py, parsers.py, and
+polarizer.py scripts.
+'''
+
 from parsers import *
 from polarizer import *
 from scraper import *

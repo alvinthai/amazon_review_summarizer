@@ -1,3 +1,9 @@
+'''
+This script contains functions that are very specific to preparing the
+execution of the Flask app. The collect function is a flask specific pipeline
+needed for passing information to create dynamic HTML pages.
+'''
+
 from __future__ import division
 from bs4 import BeautifulSoup
 from summarizer import *
@@ -11,7 +17,7 @@ def displayed_aspects(polarizer1, polarizer2=None, n=10):
     INPUT: Polarizer, Polarizer, int
     OUTPUT: list, list, list
 
-    args:
+    Args:
         n (int): number of aspects to match between two products
 
     Returns a list of top n aspects between two products, a list of top n
@@ -38,6 +44,9 @@ def model_data(polarizer, aspects=None):
     INPUT: Polarizer, list
     OUTPUT: list, list
 
+    Args:
+        aspects: list of aspects to apply function to
+
     Given a list of aspects, return a list of sentiment class percentage data
     (raw data, and visualizion normalized data) and a list of average rating
     data for aspect
@@ -60,7 +69,7 @@ def product_info(polarizer, head=0):
     INPUT: Polarizer, int
     OUTPUT: str, str, str, str
 
-    args:
+    Args:
         head (int): index of which user agent header to use
 
     Gets image url, price, title, and product url of product

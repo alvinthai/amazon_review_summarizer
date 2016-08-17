@@ -1,3 +1,9 @@
+'''
+This script contains functions that performs sentiment analysis on sentences
+containing aspects extracted from the Unigramer, Bigramer, and Trigramer
+classes from parsers.py
+'''
+
 from __future__ import division
 from afinn import Afinn
 from collections import defaultdict
@@ -15,7 +21,7 @@ class Polarizer(object):
 
     def __init__(self, unigramer, bigramer, trigramer):
         '''
-        INPUT: Unigramer, Bigramer
+        INPUT: Unigramer, Bigramer, Trigramer
         OUTPUT: None
 
         Attributes:

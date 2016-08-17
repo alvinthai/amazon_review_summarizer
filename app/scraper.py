@@ -1,3 +1,9 @@
+'''
+This script contains functions that scrapes an Amazon product page, stores
+HTML files offline, and creates Loader objects for use with the
+SentCustomProperties class of functions in parsers.py
+'''
+
 from bs4 import BeautifulSoup
 import math
 import os
@@ -91,12 +97,13 @@ class Loader(object):
 
     def scrape(self, n_reviews=300, delete=False, retries=0):
         '''
-        INPUT: int, bool
+        INPUT: int, bool, int
         OUTPUT: None
 
         Args:
             n_reviews: number of reviews to scrape
             delete: option to force delete folder containing cached reviews
+            retries: current count of scraper function retries
 
         Scrapes n most helpful amazon reviews and extracts reviews.
         If already scraped, extracts reviews.

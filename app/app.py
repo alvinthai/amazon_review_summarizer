@@ -1,3 +1,9 @@
+'''
+This script should be executed inside the app folder to run the applicaiton.
+Celery and Redis-Server are prerequisites to running the app.
+See the readme.md for more info on how to install/run Celery and Redis-Server.
+'''
+
 from collections import defaultdict
 from celery import Celery
 from flask import Flask, redirect, render_template, request, session, url_for
@@ -14,7 +20,7 @@ from pipeline import load, summarize
 from scraper import Loader
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SECRET_KEY'] = os.urandom(24)   # random cookie
 app.config.update(
     CELERY_BROKER_URL='redis://localhost:6379',
     CELERY_RESULT_BACKEND='redis://localhost:6379'
@@ -26,6 +32,8 @@ review_dic = defaultdict(dict)
 
 @celery.task
 def scraper(url):
+    '''parallelizes the load function'''
+
     try:
         return load(url)
     except:
@@ -34,6 +42,8 @@ def scraper(url):
 
 @celery.task
 def aspectize(asin):
+    '''paralellizes the sentiment analysis pipeline'''
+
     product = Loader().extract(asin)
     corpus = ReviewSents(product)
     polarizer = summarize(corpus)
@@ -42,11 +52,16 @@ def aspectize(asin):
 
 @app.route('/')
 def compare_home():
+    '''home page for product comparison url input'''
+
     return render_template('compare_home.html')
 
 
 @app.route('/compare_scraped', methods=['POST'])
 def compare_scraped():
+    '''intermediate function for product comparison that scrapes product asin
+    and stores cookies'''
+
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
 
@@ -74,6 +89,9 @@ def compare_scraped():
 
 @app.route('/compare_results')
 def compare_results():
+    '''runs aspect mining, sentiment analysis, and outputs final results for
+    product comparison'''
+
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
 
@@ -112,11 +130,16 @@ def compare_results():
 
 @app.route('/summarize_home')
 def summarize_home():
+    '''home page for product summarization url input'''
+
     return render_template('summarize_home.html')
 
 
 @app.route('/summarize_scraped', methods=['POST'])
 def summarize_scraped():
+    '''intermediate function for product summarization that scrapes product
+    asin and stores cookies. does not involve the use of celery'''
+
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
 
@@ -140,6 +163,8 @@ def summarize_scraped():
 
 @app.route('/summarize_results')
 def summarize_results():
+    '''runs aspect mining, sentiment analysis, and outputs final results for
+    product summarization. does not involve the use of celery'''
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
 
@@ -174,6 +199,8 @@ def summarize_results():
 
 @app.route('/full_review')
 def full_review():
+    '''directs user to page of full review details'''
+
     session_url = request.args.get('session')
     product = int(request.args.get('product'))
     review_idx = int(request.args.get('review_idx'))

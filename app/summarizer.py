@@ -1,3 +1,11 @@
+'''
+This script contains functions that summarizes multiple Polarizer objects
+from the polarizer.py script. Functions that use Polarizer objects to create
+custom HTML code and javascript friendly variables are also included in this
+script.
+'''
+
+
 from __future__ import division
 import numpy as np
 import pandas as pd
@@ -155,6 +163,7 @@ def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
     Args:
         ai: aspect index
         aspect: aspect to print result for
+        session: a key of asin idenifier(s) for products under analysis
         max_txt_len: max length for each printed line
 
     Outputs a string of html/javascript and a three-dimensional array of review
@@ -200,11 +209,12 @@ def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
 def flask_output_iter(aspect_list, session, polarizer1, polarizer2=None,
                       max_txt_len=80):
     '''
-    INPUT: list, Polarizer, Polarizer, int
+    INPUT: list, str, Polarizer, Polarizer, int
     OUTPUT: list, list
 
     Args:
         aspect_list: list of aspects to print result for
+        session: a key of asin idenifier(s) for products under analysis
         max_txt_len: max length for each printed line
 
     Repeats flask_output for a list of array. Outputs a list of html strings

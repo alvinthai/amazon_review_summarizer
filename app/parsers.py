@@ -1,3 +1,18 @@
+'''
+This script contains functions for five custom classes that utilize the spacy
+python package. This script should be used after obtaining an extracted Loader
+object from scraper.py
+
+SentCustomProperties: An object that stores index and rating data from the
+                      original document corpus with a parsed spacy sentence
+                      object.
+ReviewSents:          An object that stoes many SentCustomProperties objects
+Unigramer:            A class of functions that predicts unigram aspects
+Bigramer:             A class of functions that predicts bigram aspects
+Trigramer:            A class of functions that predicts trigram aspects
+'''
+
+
 from __future__ import division
 from collections import Counter, defaultdict
 from sklearn.feature_extraction.text import CountVectorizer
@@ -330,7 +345,7 @@ class Bigramer(object):
                     yield element
 
     def candidate_bigrams(self, corpus, min_pct=0.005,
-                          pmi_pct=0.0004, max_avg_dist=2):
+                          pmi_pct=0.0003, max_avg_dist=2):
         '''
         INPUT: ReviewSents, float, float, float
         OUTPUT: set(str)

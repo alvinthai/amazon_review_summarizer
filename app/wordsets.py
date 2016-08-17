@@ -1,3 +1,8 @@
+'''
+This file stores variables of items to filter out during the execution of the
+functions inside the parsers.py script
+'''
+
 # list of dependencies not likely to be words found in features
 com_dep = set(['det', 'aux', 'cc', 'punct', 'mark', '', 'neg', 'nummod',
                'prt', 'auxpass', 'case', 'expl', 'preconj', 'intj',
