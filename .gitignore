@@ -1,6 +1,9 @@
 # Custom Folders
 reviews/
 
+# Custom Files
+app/templates/index.html
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
