@@ -1,6 +1,6 @@
 from collections import defaultdict
 from celery import Celery
-from flask import Flask, request, render_template, session
+from flask import Flask, redirect, render_template, request, session, url_for
 from gevent.wsgi import WSGIServer
 import datetime
 import json
@@ -69,10 +69,10 @@ def compare_scraped():
     print "post request completed at " + \
         datetime.datetime.now().time().isoformat()
 
-    return render_template('compare_scraped.html')
+    return redirect(url_for('compare_results'))
 
 
-@app.route('/compare_results', methods=['POST'])
+@app.route('/compare_results')
 def compare_results():
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
@@ -126,21 +126,19 @@ def summarize_scraped():
         raise RuntimeError("No url entered")
 
     try:
-        item = scraper.delay(url)
+        item = load(url)
     except RuntimeError:
         return render_template('failed.html')
 
-    asin = next(item.collect())[1].asin
-
-    session['products'] = asin
+    session['products'] = item.asin
 
     print "post request completed at " + \
         datetime.datetime.now().time().isoformat()
 
-    return render_template('summarize_scraped.html')
+    return redirect(url_for('summarize_results'))
 
 
-@app.route('/summarize_results', methods=['POST'])
+@app.route('/summarize_results')
 def summarize_results():
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
@@ -148,8 +146,9 @@ def summarize_results():
     print session['products']
 
     asin = session['products']
-    polarizer = aspectize.delay(asin)
-    product, polarizer = next(polarizer.collect())[1]
+    product = Loader().extract(asin)
+    corpus = ReviewSents(product)
+    polarizer = summarize(corpus)
 
     result = collect(polarizer, product)
 
