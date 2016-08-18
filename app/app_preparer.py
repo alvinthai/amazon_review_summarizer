@@ -104,16 +104,14 @@ def product_info(polarizer, head=0):
     return img_url, price, title, url
 
 
-def collect(polarizer1, loader1, polarizer2=None, loader2=None):
+def collect(polarizer1, polarizer2=None):
     '''
     INPUT: Polarizer, Loader, Polarizer, loader2
     OUTPUT: dict
 
     Args:
         polarizer1: Polarizer object returned from pipeline.summarize function
-        loader1: loader object returned from pipeline.load function
         polarizer2: same as polarizer1 except for a second product
-        loader2: same as loader1 except for a second product
 
     Runs functions to pass data for product1 and product2 (if applicable)
     into flask application. Returns a dictionary of lists.
@@ -129,9 +127,7 @@ def collect(polarizer1, loader1, polarizer2=None, loader2=None):
     if not polarizer2:
         aspects_pct, ratings = [aspects_pct_all1], [mean_ratings1]
         img_urls, prices, titles, urls = [img_url1], [price1], [title1], [url1]
-        authors_lst, headlines_lst = [loader1.authors], [loader1.headlines]
-        ratings_lst, reviews_lst = [loader1.ratings], [loader1.reviews]
-        session_url = polarizer1.asin
+        asins = polarizer1.asin
     else:
         aspects_pct_all2, mean_ratings2 = model_data(polarizer2, aspects)
         img_url2, price2, title2, url2 = product_info(polarizer2, 1)
@@ -142,16 +138,10 @@ def collect(polarizer1, loader1, polarizer2=None, loader2=None):
         prices = [price1, price2]
         titles = [title1, title2]
         urls = [url1, url2]
+        asins = polarizer1.asin + '_' + polarizer2.asin
 
-        authors_lst = [loader1.authors, loader2.authors]
-        headlines_lst = [loader1.headlines, loader2.headlines]
-        ratings_lst = [loader1.ratings, loader2.ratings]
-        reviews_lst = [loader1.reviews, loader2.reviews]
-        session_url = polarizer1.asin + '_' + polarizer2.asin
-
-    html_str, js_arr = flask_output_iter(aspects, session_url, polarizer1,
+    html_str, js_arr = flask_output_iter(aspects, asins, polarizer1,
                                          polarizer2, 105)
 
     return [aspectsf, aspects_pct, en_aspects, ratings, html_str, js_arr,
-            img_urls, prices, titles, urls, authors_lst, headlines_lst,
-            ratings_lst, reviews_lst, session_url]
+            img_urls, prices, titles, urls]

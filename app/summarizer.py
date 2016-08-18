@@ -96,7 +96,7 @@ def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
     print big_str
 
 
-def _html_coder(ai, pi, ci, cat, dic, session, max_txt_len, curr_str):
+def _html_coder(ai, pi, ci, cat, dic, asin, max_txt_len, curr_str):
     '''
     INPUT: int, int, int, str, dict, int, str
     OUTPUT: str, list
@@ -107,6 +107,7 @@ def _html_coder(ai, pi, ci, cat, dic, session, max_txt_len, curr_str):
         ci: polarity class index (0: 'pos', 1: 'mixed', 2: 'neg')
         cat: label for polarity class
         dic: dictionary to extract review text from with cat keys
+        asin: identifier id of amazon product
         max_txt_len: max length for each printed line
         curr_str: current html string to be modified
 
@@ -145,8 +146,8 @@ def _html_coder(ai, pi, ci, cat, dic, session, max_txt_len, curr_str):
             curr_str += '''<a id="asp{0}_prd{1}_{2}_{3}_snip" '''\
                 .format(ai, pi, ci, row_i)
             curr_str += '''style="color:#337ab7" '''
-            curr_str += '''href="full_review?session={}&'''.format(session)
-            curr_str += '''product={}&review_idx={}"'''.format(pi, rev_i)
+            curr_str += '''href="full_review?asin={}&'''.format(asin)
+            curr_str += '''review_idx={}"'''.format(rev_i)
             curr_str += '''></a></p></p>'''
             curr_str += '</div>'
             curr_str += '</div>'
@@ -154,7 +155,7 @@ def _html_coder(ai, pi, ci, cat, dic, session, max_txt_len, curr_str):
     return curr_str, txt_list
 
 
-def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
+def flask_output(ai, aspect, asins, polarizer1, polarizer2=None,
                  max_txt_len=80):
     '''
     INPUT: int, str, Polarizer, Polarizer, int
@@ -163,7 +164,7 @@ def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
     Args:
         ai: aspect index
         aspect: aspect to print result for
-        session: a key of asin idenifier(s) for products under analysis
+        asins: a key of asin idenifier(s) for products under analysis
         max_txt_len: max length for each printed line
 
     Outputs a string of html/javascript and a three-dimensional array of review
@@ -171,6 +172,11 @@ def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
     '''
     dic1 = polarizer1.aspect_pol_list[aspect]
     dic2 = polarizer2.aspect_pol_list[aspect] if polarizer2 else None
+
+    if polarizer2:
+        asin1, asin2 = asins.split('_')
+    else:
+        asin1 = asins
 
     big_str, js_arr1, js_arr2, cats = "", [], [], ['pos', 'mixed', 'neg']
     html_panel = ['''<div id="home" class="tab-pane in active">''',
@@ -184,7 +190,7 @@ def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
             if polarizer2 else '''style="width:75%">'''
         big_str += '''<div class="well">'''
 
-        big_str, txt_list = _html_coder(ai, 0, ci, cat, dic1, session,
+        big_str, txt_list = _html_coder(ai, 0, ci, cat, dic1, asin1,
                                         max_txt_len, big_str)
 
         big_str += '</div></div>' if polarizer2 else '</div></div></div>'
@@ -195,7 +201,7 @@ def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
             big_str += '''style="width:37.5%; padding-left:0.6%">'''
             big_str += '''<div class="well">'''
 
-            big_str, txt_list = _html_coder(ai, 1, ci, cat, dic2, session,
+            big_str, txt_list = _html_coder(ai, 1, ci, cat, dic2, asin2,
                                             max_txt_len, big_str)
 
             big_str += '</div></div></div>'
@@ -206,7 +212,7 @@ def flask_output(ai, aspect, session, polarizer1, polarizer2=None,
     return big_str, js_arr
 
 
-def flask_output_iter(aspect_list, session, polarizer1, polarizer2=None,
+def flask_output_iter(aspect_list, asins, polarizer1, polarizer2=None,
                       max_txt_len=80):
     '''
     INPUT: list, str, Polarizer, Polarizer, int
@@ -214,7 +220,7 @@ def flask_output_iter(aspect_list, session, polarizer1, polarizer2=None,
 
     Args:
         aspect_list: list of aspects to print result for
-        session: a key of asin idenifier(s) for products under analysis
+        asins: a key of asin idenifier(s) for products under analysis
         max_txt_len: max length for each printed line
 
     Repeats flask_output for a list of array. Outputs a list of html strings
@@ -223,7 +229,7 @@ def flask_output_iter(aspect_list, session, polarizer1, polarizer2=None,
     html_strs, js_arrs = [], []
 
     for ai, aspect in enumerate(aspect_list):
-        big_str, js_arr = flask_output(ai, aspect, session, polarizer1,
+        big_str, js_arr = flask_output(ai, aspect, asins, polarizer1,
                                        polarizer2, max_txt_len)
 
         html_strs.append(big_str)

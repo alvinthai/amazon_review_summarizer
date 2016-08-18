@@ -83,15 +83,18 @@ To evaluate the effectiveness of these packages, random sentences were sampled a
 * [Anaconda](https://docs.continuum.io/anaconda/install)
 * afinn ```pip install afinn```
 * celery ```pip install celery```
+* [mongoDB](https://docs.mongodb.com/manual/administration/install-community/)
 * [redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-redis)
 * [spacy](https://spacy.io/docs/#getting-started)
 * textblob ```pip install textblob```
 
 ### Execution
 1. Install required packages
-2. Start redis with the following command: ```redis-server```
-3. Start celery with the following command from the app folder: ```celery -A app.celery worker```
-4. Start flask app with the following command from the app folder: ```python app.py```
+2. Start mongoDB with the following command: ```sudo mongod```
+3. Start mongo with the following command: ```mongo```
+4. Start redis with the following command: ```redis-server```
+5. Start celery with the following command from the app folder: ```celery -A app.celery worker```
+6. Start flask app with the following command from the app folder: ```python app.py```
 
 
 ## References

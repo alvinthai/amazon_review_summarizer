@@ -4,10 +4,9 @@ Celery and Redis-Server are prerequisites to running the app.
 See the readme.md for more info on how to install/run Celery and Redis-Server.
 '''
 
-from collections import defaultdict
 from celery import Celery
 from flask import Flask, redirect, render_template, request, session, url_for
-from sample_data import *
+from pymongo import MongoClient
 import datetime
 import json
 import numpy as np
@@ -21,18 +20,15 @@ from scraper import Loader
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)   # random cookie
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379'
-)
+app.config.update(CELERY_BROKER_URL='redis://localhost:6379',
+                  CELERY_RESULT_BACKEND='redis://localhost:6379')
+
 celery = Celery(app.name, backend=app.config['CELERY_RESULT_BACKEND'],
                 broker=app.config['CELERY_BROKER_URL'])
 
-review_dic = defaultdict(dict)
-review_dic['B004NBXVFS_B00J7B8T5Q']['authors_lst'] = sample_authors
-review_dic['B004NBXVFS_B00J7B8T5Q']['headlines_lst'] = sample_headlines
-review_dic['B004NBXVFS_B00J7B8T5Q']['ratings_lst'] = sample_ratings
-review_dic['B004NBXVFS_B00J7B8T5Q']['reviews_lst'] = sample_reviews
+client = MongoClient()
+db = client['ars']
+tab = db['review_data']
 
 
 @celery.task
@@ -122,19 +118,13 @@ def compare_results():
     product1, polarizer1 = next(polarizers[0].collect())[1]
     product2, polarizer2 = next(polarizers[1].collect())[1]
 
-    result = collect(polarizer1, product1, polarizer2, product2)
+    result = collect(polarizer1, polarizer2)
 
     if result == "No matches":
         return render_template('no_matches.html')
     else:
         [aspectsf, aspects_pct, en_aspects, ratings, html_str, js_arr,
-         img_urls, prices, titles, urls, authors_lst, headlines_lst,
-         ratings_lst, reviews_lst, session_url] = result
-
-        review_dic[session_url]['authors_lst'] = authors_lst
-        review_dic[session_url]['headlines_lst'] = headlines_lst
-        review_dic[session_url]['ratings_lst'] = ratings_lst
-        review_dic[session_url]['reviews_lst'] = reviews_lst
+         img_urls, prices, titles, urls] = result
 
         print "post request completed at " + \
             datetime.datetime.now().time().isoformat()
@@ -143,8 +133,7 @@ def compare_results():
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
                            ratings=ratings, html_str=html_str,
                            review_txt=js_arr, img_urls=img_urls,
-                           titles=titles, prices=prices, urls=urls,
-                           session=session_url)
+                           titles=titles, prices=prices, urls=urls)
 
 
 @app.route('/summarize_home')
@@ -194,16 +183,10 @@ def summarize_results():
     corpus = ReviewSents(product)
     polarizer = summarize(corpus)
 
-    result = collect(polarizer, product)
+    result = collect(polarizer)
 
     [aspectsf, aspects_pct, en_aspects, ratings, html_str, js_arr,
-     img_urls, prices, titles, urls, authors_lst, headlines_lst,
-     ratings_lst, reviews_lst, session_url] = result
-
-    review_dic[session_url]['authors_lst'] = authors_lst
-    review_dic[session_url]['headlines_lst'] = headlines_lst
-    review_dic[session_url]['ratings_lst'] = ratings_lst
-    review_dic[session_url]['reviews_lst'] = reviews_lst
+     img_urls, prices, titles, urls] = result
 
     print "post request completed at " + \
         datetime.datetime.now().time().isoformat()
@@ -212,26 +195,32 @@ def summarize_results():
                            aspects_f=aspectsf, aspects_pct=aspects_pct,
                            ratings=ratings, html_str=html_str,
                            review_txt=js_arr, img_urls=img_urls,
-                           titles=titles, prices=prices, urls=urls,
-                           session=session_url)
+                           titles=titles, prices=prices, urls=urls)
 
 
 @app.route('/full_review')
 def full_review():
     '''directs user to page of full review details'''
 
-    session_url = request.args.get('session')
-    product = int(request.args.get('product'))
+    asin_id = request.args.get('asin')
     review_idx = int(request.args.get('review_idx'))
+    data = tab.find({'asin': asin_id, 'review_idx': review_idx})[0]
 
-    auth = review_dic[session_url]['authors_lst'][product][review_idx]
-    head = review_dic[session_url]['headlines_lst'][product][review_idx]
-    rate = review_dic[session_url]['ratings_lst'][product][review_idx]
-    revw = review_dic[session_url]['reviews_lst'][product][review_idx]
+    auth = data['author']
+    head = data['headline']
+    rate = data['rating']
+    revw = data['review']
 
     return render_template('full_review.html', author=auth, headline=head,
                            rating=rate, review=revw)
 
 
 if __name__ == '__main__':
+    check1 = list(tab.find({'_id': 'B004NBXVFS_0'}))
+    check2 = list(tab.find({'_id': 'B00J7B8T5Q_0'}))
+
+    if not check1 or not check2:
+        from sample_data import store_sample_data
+        store_sample_data()
+
     app.run(host='0.0.0.0', port=8000)

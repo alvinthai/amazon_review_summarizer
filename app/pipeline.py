@@ -39,7 +39,7 @@ def parse(product):
     Uses spacy to tokenize sentences in review and returns custom class of
     review data for later processing
     '''
-    product.extract(product.asin)
+    product.extract()
     return ReviewSents(product)
 
 
