@@ -1,10 +1,11 @@
 '''
 This script contains functions that scrapes an Amazon product page, stores
-HTML files offline, and creates Loader objects for use with the
-SentCustomProperties class of functions in parsers.py
+HTML files offline, stores review data into mongodb, and creates Loader objects
+for use with the SentCustomProperties class of functions in parsers.py
 '''
 
 from bs4 import BeautifulSoup
+from pymongo import MongoClient
 import math
 import os
 import re
@@ -28,11 +29,9 @@ class Loader(object):
             name (str): custom name for Amazon product
             ratings (list): list of ints of review ratings
             reviews (list): list of strings of review text
-            url (str): url of the amazon link to scrape
+            url (str): url of the amazon link to scrape (required for scraping)
         '''
-        self.authors = None
         self.asin = None
-        self.headlines = None
         self.name = name
         self.ratings = None
         self.reviews = None
@@ -41,7 +40,7 @@ class Loader(object):
     def _get_id(self, url):
         '''
         INPUT: str
-        OUTPUT: str
+        OUTPUT: None
 
         Args:
             url: an Amazon url string
@@ -57,19 +56,13 @@ class Loader(object):
             # url format https://www.amazon.com/.../id
             asin = regex.findall(url)[-1][:10]
 
-        return asin
+        self.asin = asin
 
-    def _delete(self, asin):
+    def _delete(self):
         '''
-        INPUT: str
-        OUTPUT: None
-
-        Args:
-            asin: asin identifier for Amazon product
-
         Deletes folder with preexisting review html data for asin
         '''
-        path = os.getcwd() + '/reviews/com/{}/'.format(asin)
+        path = os.getcwd() + '/reviews/com/{}/'.format(self.asin)
         pages = [file_ for file_ in os.listdir(path)]
 
         try:
@@ -109,16 +102,14 @@ class Loader(object):
         If already scraped, extracts reviews.
         '''
         try:
-            url = self.url
-            asin = self._get_id(url)
-            self.asin = asin
+            self._get_id(self.url)
         except:
             raise RuntimeError("Cannot find asin from the url.")
 
-        folder = os.getcwd() + '/reviews/com/' + asin
+        folder = os.getcwd() + '/reviews/com/' + self.asin
 
         if delete:
-            self._delete(asin)
+            self._delete()
 
         if 'amazon_crawler.py' in os.listdir(os.getcwd()):
             cmd = 'python amazon_crawler.py'
@@ -135,7 +126,7 @@ class Loader(object):
             # https://github.com/aesuli/amadown2py
             try:
                 os.system('{} -d com {} -m {} -o reviews'
-                          .format(cmd, asin, n_reviews))
+                          .format(cmd, self.asin, n_reviews))
                 last_page = self._get_html_count(folder)
             except NameError:
                 raise RuntimeError("Invalid ASIN")
@@ -144,7 +135,7 @@ class Loader(object):
             new_files = True
             rev_cnt_tag = "a-size-medium totalReviewCount"
 
-            with open('{}/{}_1.html'.format(folder, asin), 'r') as f:
+            with open('{}/{}_1.html'.format(folder, self.asin), 'r') as f:
                 soup = BeautifulSoup(f, 'html.parser')
 
             tag = soup.find("span", {"class": rev_cnt_tag})
@@ -178,24 +169,32 @@ class Loader(object):
                                              retries=retries)
 
         if last_page == 1 and retries == 5:
-            self._delete(asin)
+            self._delete()
             raise RuntimeError("Scraping Failed!")
 
-    def extract(self, asin):
+    def extract(self, asin=None):
         '''
         INPUT: str
-        OUTPUT: self
+        OUTPUT: None
 
         Args:
-            asin: an Amazon asin str identifier (output from get_id function)
+            asin: asin identifier for Amazon product (only input as argument
+                  if scraping is done seperately from extraction)
 
         Extracts the star rating, review text, author name, and review headline
-        from directory of amazon html files
+        from directory of amazon html files and stores to MongoDB. Full lists
+        of rating and review data are stored as lists in the Loader object.
         '''
-        self.asin = asin
+        client = MongoClient()
+        db = client['ars']
+        tab = db['review_data']
+        index = 0
+
+        if asin:
+            self.asin = asin
 
         if not self.name:
-            f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(asin)
+            f = os.getcwd() + '/reviews/com/{0}/{0}_1.html'.format(self.asin)
 
             with open(f, 'r') as html:
                 soup = BeautifulSoup(html, 'html.parser')
@@ -205,10 +204,9 @@ class Loader(object):
             except:
                 raise RuntimeError("Invalid HTML code")
 
-        ratings, reviews, authors, headlines = [], [], [], []
-
-        path = os.getcwd() + '/reviews/com/{}/'.format(asin)
+        path = os.getcwd() + '/reviews/com/{}/'.format(self.asin)
         pages = [file_ for file_ in os.listdir(path) if file_[-5:] == '.html']
+        ratings, reviews = [], []
 
         for page in pages:
             with open(path + page, 'r') as f:
@@ -221,6 +219,7 @@ class Loader(object):
                     continue
 
                 for tag in tags:
+                    _id = "{}_{}".format(self.asin, index)
                     r_class = "a-size-base review-text"
                     a_class = "a-size-base a-link-normal author"
                     h_class = "a-size-base a-link-normal review-title " \
@@ -240,10 +239,15 @@ class Loader(object):
 
                     ratings.append(rating)
                     reviews.append(review)
-                    authors.append(author)
-                    headlines.append(headline)
 
-        self.ratings, self.reviews, self.authors, self.headlines = \
-            ratings, reviews, authors, headlines
+                    data = {'asin': self.asin, 'review_idx': index,
+                            'rating': rating, 'review': review,
+                            'author': author, 'headline': headline}
 
+                    tab.update_one({'_id': _id}, {'$set': data},
+                                   upsert=True)
+
+                    index += 1
+
+        self.ratings, self.reviews = ratings, reviews
         return self
