@@ -84,6 +84,7 @@ To evaluate the effectiveness of these packages, random sentences were sampled a
 * afinn ```pip install afinn```
 * celery ```pip install celery```
 * [mongoDB](https://docs.mongodb.com/manual/administration/install-community/)
+* pymongo ```pip install pymongo```
 * [redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-redis)
 * [spacy](https://spacy.io/docs/#getting-started)
 * textblob ```pip install textblob```

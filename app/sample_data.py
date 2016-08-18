@@ -17,7 +17,7 @@ def store_sample_data():
         sample_data = cPickle.load(f)
 
     for asin in sample_data:
-        for i, (auth, head, rate, revw) in enumerate(sample_data[asin]):
+        for i, (auth, head, rate, revw) in enumerate(zip(*sample_data[asin])):
             _id = '{}_{}'.format(asin, i)
 
             data = {'asin': asin, 'review_idx': i, 'rating': rate,

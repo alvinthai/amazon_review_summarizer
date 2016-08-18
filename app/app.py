@@ -30,6 +30,14 @@ client = MongoClient()
 db = client['ars']
 tab = db['review_data']
 
+check1 = list(tab.find({'_id': 'B004NBXVFS_0'}))
+check2 = list(tab.find({'_id': 'B00J7B8T5Q_0'}))
+
+if not check1 or not check2:
+    # adds sample data to mongoDB if it doesn't exist
+    from sample_data import store_sample_data
+    store_sample_data()
+
 
 @celery.task
 def scraper(url):
@@ -216,11 +224,4 @@ def full_review():
 
 
 if __name__ == '__main__':
-    check1 = list(tab.find({'_id': 'B004NBXVFS_0'}))
-    check2 = list(tab.find({'_id': 'B00J7B8T5Q_0'}))
-
-    if not check1 or not check2:
-        from sample_data import store_sample_data
-        store_sample_data()
-
     app.run(host='0.0.0.0', port=8000)
