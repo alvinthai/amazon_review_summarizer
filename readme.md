@@ -1,5 +1,6 @@
 ![](app/static/img/ars.png)
 
+This project was developed as a capstone project for Galvanize's Data Science Immersive course.  
 Try out the application [here](http://www.reviewsummarizer.net/)
 
 ## Background

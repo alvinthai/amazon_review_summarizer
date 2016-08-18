@@ -7,7 +7,7 @@ See the readme.md for more info on how to install/run Celery and Redis-Server.
 from collections import defaultdict
 from celery import Celery
 from flask import Flask, redirect, render_template, request, session, url_for
-from gevent.wsgi import WSGIServer
+from sample_data import *
 import datetime
 import json
 import numpy as np
@@ -27,7 +27,12 @@ app.config.update(
 )
 celery = Celery(app.name, backend=app.config['CELERY_RESULT_BACKEND'],
                 broker=app.config['CELERY_BROKER_URL'])
+
 review_dic = defaultdict(dict)
+review_dic['B004NBXVFS_B00J7B8T5Q']['authors_lst'] = sample_authors
+review_dic['B004NBXVFS_B00J7B8T5Q']['headlines_lst'] = sample_headlines
+review_dic['B004NBXVFS_B00J7B8T5Q']['ratings_lst'] = sample_ratings
+review_dic['B004NBXVFS_B00J7B8T5Q']['reviews_lst'] = sample_reviews
 
 
 @celery.task
@@ -51,6 +56,20 @@ def aspectize(asin):
 
 
 @app.route('/')
+def home():
+    '''home page'''
+
+    return render_template('home.html')
+
+
+@app.route('/sample_results')
+def sample_results():
+    '''sample product comparison results'''
+
+    return render_template('sample_results.html')
+
+
+@app.route('/compare_home')
 def compare_home():
     '''home page for product comparison url input'''
 
