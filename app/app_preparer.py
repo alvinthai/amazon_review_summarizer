@@ -106,7 +106,7 @@ def product_info(polarizer, head=0):
 
 def collect(polarizer1, polarizer2=None):
     '''
-    INPUT: Polarizer, Loader, Polarizer, loader2
+    INPUT: Polarizer, Polarizer
     OUTPUT: dict
 
     Args:

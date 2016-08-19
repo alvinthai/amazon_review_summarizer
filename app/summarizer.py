@@ -98,7 +98,7 @@ def print_aspect_summary(aspect_list, polarizer1, polarizer2, line_len=115):
 
 def _html_coder(ai, pi, ci, cat, dic, asin, max_txt_len, curr_str):
     '''
-    INPUT: int, int, int, str, dict, int, str
+    INPUT: int, int, int, str, dict, str, int, str
     OUTPUT: str, list
 
     Args:
@@ -158,7 +158,7 @@ def _html_coder(ai, pi, ci, cat, dic, asin, max_txt_len, curr_str):
 def flask_output(ai, aspect, asins, polarizer1, polarizer2=None,
                  max_txt_len=80):
     '''
-    INPUT: int, str, Polarizer, Polarizer, int
+    INPUT: int, str, str, Polarizer, Polarizer, int
     OUTPUT: str, list
 
     Args:
@@ -224,7 +224,7 @@ def flask_output_iter(aspect_list, asins, polarizer1, polarizer2=None,
         max_txt_len: max length for each printed line
 
     Repeats flask_output for a list of array. Outputs a list of html strings
-    and a five-dimensional array of review text for input into flask/jinfa
+    and a five-dimensional array of review text for input into flask/jinja
     '''
     html_strs, js_arrs = [], []
 

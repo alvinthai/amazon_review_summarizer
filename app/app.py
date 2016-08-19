@@ -1,7 +1,8 @@
 '''
 This script should be executed inside the app folder to run the applicaiton.
-Celery and Redis-Server are prerequisites to running the app.
-See the readme.md for more info on how to install/run Celery and Redis-Server.
+Mongo, Celery and Redis-Server are prerequisites to running the app.
+See the readme.md for more info on how to install/run Mongo, Celery and
+Redis-Server.
 '''
 
 from celery import Celery
