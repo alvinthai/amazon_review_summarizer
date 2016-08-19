@@ -13,9 +13,7 @@ The goal of Amazon Review Summarizer is to build a web application that can exec
 * Extract common aspects from a corpus of reviews
 * Perform opinion mining (positive and negative polarity) on top aspects
 
-Amazon Review Summarizer also includes a tool for side-by-side product comparison. Given any two related products, a consumer will be able to compare the sentiments for any top aspect common to both products. Here is an example of this tool in action:
-
-![](app/static/img/ars_example.png)
+Amazon Review Summarizer also includes a tool for side-by-side product comparison. Given any two related products, a consumer will be able to compare the sentiments for any top aspect common to both products. Here are [example results](http://www.reviewsummarizer.net/sample_results) from the application.
 
 ## Methodology
 
