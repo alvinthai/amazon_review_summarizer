@@ -119,7 +119,10 @@ def compare_results():
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
 
-    print session['products']
+    try:
+        print session['products']
+    except RuntimeError:
+        return render_template('failed.html')
 
     asin1, asin2 = session['products']
 
@@ -184,8 +187,11 @@ def summarize_results():
     product summarization. does not involve the use of celery'''
     print "post request started at " + \
         datetime.datetime.now().time().isoformat()
-
-    print session['products']
+    
+    try:
+        print session['products']
+    except RuntimeError:
+        return render_template('failed.html')
 
     asin = session['products']
     product = Loader().extract(asin)
