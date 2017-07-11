@@ -29,25 +29,26 @@ The main pipeline for Amazon Review Summarizer is composed of 6 steps:
 ### Aspect Mining
 
 * Tokenization
- * Split reviews into sentences
-* POS tagging
- * Tag each word of sentence with its contextual part of speech  
- * Collect words used in noun context as candidate unigram aspects
-* Dependency Parsing
- * Analyze sentences to track the dependency types between linguistic units  
- ![](app/static/img/depgraph0.png)
+  * Split reviews into sentences
+* Part of Speech (POS) tagging
+  * Tag each word of sentence with its contextual part of speech  
+  * Collect words used in noun context as candidate unigram aspects
+* [Dependency Parsing](https://web.stanford.edu/~jurafsky/slp3/14.pdf)
+  * Analyze sentences to track the dependency types between linguistic units  
+  ![](app/static/img/depgraph0.png)
 * Lemmatization
- * Lemmatize words into root form to count aspect frequency across all sentences and user reviews
-* Associative Rule Mining
- * Finding combination of words that appear together within a sentences
- * Used for determining candidate bigram aspects (each bigram must contain at least one valid unigram)
- * Limited the word radius to +/- 3 words as most bigram aspects tend to have words close to each other
+  * Lemmatize words into root form to count aspect frequency across all sentences and user reviews
+* [Associative Rule Mining](https://en.wikipedia.org/wiki/Apriori_algorithm)
+  * Finding combination of words that appear together within a sentences
+  * Used for determining candidate bigram aspects (each bigram must contain at least one valid unigram)
+  * Limited the word radius to +/- 3 words as most bigram aspects tend to have words close to each other
+  * Example results:
   ![](app/static/img/apriori_example.png)
 
 ##### Feature engineering
 
 * AMOD %:  
-the percentage of amod dependencies among all the dependencies of an unigram aspect
+the percentage of AMOD dependencies (link from a noun to an adjective modifier) among all the dependencies of an unigram aspect
 * Average Word Distance:  
 average absolute distance between bigrams words across all sentences in all reviews
 * PMI (pointwise mutual information):  
@@ -56,12 +57,12 @@ a measure of association of two words with respect to the frequency each individ
 
 ##### Evaluation
 
-Evaluated the model against products with over 1000+ reviews in a publicly available Amazon dataset. I individually hand-labeled data and chose tuning parameters based on best accuracy.
+Evaluated the model against products with over 1000+ reviews in a publicly available Amazon dataset. I individually hand-labeled data and chose tuning parameters based on accuracy against the majority class baseline.
 
-| CATEGORY  | DATASET                                                  | ENGINEERED FEATURES                                              | ACCURACY |
-|-----------|----------------------------------------------------------|------------------------------------------------------------------|----------|
-| Unigrams  | Top 20 frequent unigrams per product                     | AMOD %                                                           | 74%      |
-| Bigrams   | Top 20 frequent bigrams per product                      | Average Word Distance; PMI                                       | 82%      |
+| CATEGORY  | DATASET                                                  | ENGINEERED FEATURES                                              | ACCURACY | BASELINE |
+|-----------|----------------------------------------------------------|------------------------------------------------------------------|----------|----------|
+| Unigrams  | Top 20 frequent unigrams per product                     | AMOD %                                                           | 74%      | 63%      |
+| Bigrams   | Top 20 frequent bigrams per product                      | Average Word Distance; PMI                                       | 82%      | 63%      |
 
 ### Sentiment Analysis
 
@@ -69,11 +70,11 @@ TextBlob and Afinn sentiment analysis packages were used to obtain polarity scor
 
 ##### Evaluation
 
-To evaluate the effectiveness of these packages, random sentences were sampled and hand-labeled with positive, negative, or neutral sentiment labels. A decision tree like model was used (with polarity scores and customer rating of review as a whole as features) to make a sentiment prediction on the aspect.
+To evaluate the effectiveness of these packages, random sentences were sampled and hand-labeled with positive, negative, or neutral sentiment labels. A decision tree like model was used (with polarity scores and customer rating of review as a whole as features) to make a sentiment prediction on the aspect, and the effectiveness was evaluated based on accuracy against the baseline for the star rating (1-2 stars = negative, 3 stars = neutral, 4-5 stars = positve).
 
-| CATEGORY  | DATASET                                                  | ENGINEERED FEATURES                                              | ACCURACY |
-|-----------|----------------------------------------------------------|------------------------------------------------------------------|----------|
-| Sentiment | 200 random sentences with aspects from every star rating | Polarity scores from textblob, afinn sentiment analysis packages | 72%      |
+| CATEGORY  | DATASET                                                  | ENGINEERED FEATURES                                              | ACCURACY | BASELINE |
+|-----------|----------------------------------------------------------|------------------------------------------------------------------|----------|----------|
+| Sentiment | 200 random sentences with aspects from every star rating | Polarity scores from textblob, afinn sentiment analysis packages | 72%      | 56%      |
 
 ## How to Run The Code
 
@@ -101,3 +102,4 @@ To evaluate the effectiveness of these packages, random sentences were sampled a
 * Hu & Liu's [Mining and Summarizing Customer Reviews](http://users.cis.fiu.edu/~lli003/Sum/KDD/2004/p168-hu.pdf) (2004)
 * Hu & Liu's [Mining Opinion Features in Customer Reviews](https://www.aaai.org/Papers/AAAI/2004/AAAI04-119.pdf) (2004)
 * Bing Liu's [Sentiment Analysis and Opinion Mining](http://www.cs.uic.edu/~liub/FBS/SentimentAnalysis-and-OpinionMining.pdf) (2012)
+* [Stanford dependency hierarchy](https://nlp-ml.io/jg/software/pac/standep.html)
