@@ -1,7 +1,7 @@
 ![](app/static/img/ars.png)
 
 This project was developed as a capstone project for Galvanize's Data Science Immersive course.  
-Try out the application [here](http://www.reviewsummarizer.net/)
+See sample results [here](https://alvinthai.github.io/amazon_review_summarizer/sample_results.html)
 
 ## Background
 
